@@ -3,7 +3,7 @@
 
 import sys
 
-from pyG5.pyG5 import pyG5App
+from pyG5.pyG5Main import pyG5App
 
 """Main application."""
 a = pyG5App()

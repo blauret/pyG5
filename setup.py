@@ -9,7 +9,7 @@ with open("README.md") as readme_file:
     readme = readme_file.read()
 
 
-requirements = []
+requirements = ["PyQt5"]
 
 test_requirements = [
     # TODO: put package test requirements here
