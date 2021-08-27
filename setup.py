@@ -1,13 +1,9 @@
 """Setup for the  pyG5 packaging."""
-import sys
-from os.path import dirname, join
-
 
 from setuptools import find_packages, setup
 
-from pyG5.pyG5 import __version__
+from pyG5.pyG5Main import __version__
 
-sys.path.append(join(dirname(__file__), "pyG5"))
 
 with open("README.md") as readme_file:
     readme = readme_file.read()

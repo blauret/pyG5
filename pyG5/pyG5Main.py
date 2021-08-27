@@ -21,8 +21,8 @@ from PyQt5.QtWidgets import (
     QMenu,
 )
 
-from pyG5Network import pyG5NetWorkManager
-from pyG5View import pyG5DualStack
+from pyG5.pyG5Network import pyG5NetWorkManager
+from pyG5.pyG5View import pyG5DualStack
 
 
 class pyG5App(QApplication):
