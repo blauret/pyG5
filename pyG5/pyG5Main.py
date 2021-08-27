@@ -4,7 +4,7 @@ Created on 8 Aug 2021.
 @author: Ben Lauret
 """
 
-__version__ = "0.0.1alpha1"
+__version__ = "0.0.1alpha2"
 __appName__ = "pyG5"
 
 import argparse
