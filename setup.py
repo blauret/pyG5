@@ -1,8 +1,13 @@
 """Setup for the  pyG5 packaging."""
+import sys
+from os.path import dirname, join
+
 
 from setuptools import find_packages, setup
 
-from src.pyG5 import __version__
+from pyG5.pyG5 import __version__
+
+sys.path.append(join(dirname(__file__), "pyG5"))
 
 with open("README.md") as readme_file:
     readme = readme_file.read()
@@ -29,8 +34,8 @@ setup(
     long_description=readme,
     author="Ben Lauret",
     author_email="ben@lauretland.com",
-    url="",
-    packages=find_packages(),
+    url="https://github.com/blauret/pyG5",
+    packages=find_packages(where="."),
     package_dir={"pyG5": "pyG5"},
     include_package_data=True,
     install_requires=requirements,
@@ -47,7 +52,7 @@ setup(
     ],
     test_suite="tests",
     scripts=[
-        "Scripts/pyG5",
+        "Scripts/pyG5DualStacked",
     ],
     tests_require=test_requirements,
 )
