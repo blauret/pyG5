@@ -9,7 +9,14 @@ it will connect to X-Plane and fetch the required data.
 
 This is currently developed on macOS with python 3.9 and testing on a RaspberryPi 4 with raspberypiOS and an official 7 inches display in vertical mode.
 
+Below is a view of the user interface.
+
 ![demoView](assets/demoView.png)
+
+And you can see it in its simulation environment
+
+![flightSimView](assets/flightSimView.jpeg)
+
 
 ## Maturity
 
