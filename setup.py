@@ -9,7 +9,10 @@ with open("README.md") as readme_file:
     readme = readme_file.read()
 
 
-requirements = ["PyQt5"]
+# commented out due to impossibility
+# to install PyQt5 automatically from pip on Raspbian
+# requirements = ["PyQt5"]
+requirements = []
 
 test_requirements = [
     # TODO: put package test requirements here
@@ -38,7 +41,7 @@ setup(
     dependency_links=[],
     license="MIT license",
     zip_safe=False,
-    keywords=["flash", "programmer"],
+    keywords=["X-Plane", "python", "PyQt5", "Garmin", "G5"],
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "Intended Audience :: Developers",

@@ -23,10 +23,25 @@ Not all the features of the G5 are implemented. It's currently missing:
 
 ## Installation
 
-`pyG5` depends on PyQt5.
+`pyG5` depends on `PyQt5`. Due to failure to install `PyQt5` from pip on EaspberryPi OS it is not 
+a dependency of the `pyG5`. As a result it needs to be installed manually.
+
+RaspberryPi OS:
 
 ```console
-        > sudo pip install pyG5
+        > sudo apt-get install python3-pyqt5
+```
+
+other OS:
+
+```console
+        > sudo pip3 install PyQt5
+```
+
+The install `PyG5`:
+
+```console
+        > sudo pip3 install pyG5
 ```
 
 ## Running
