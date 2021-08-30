@@ -7,7 +7,7 @@ This project aims at development a Garmin G5 view targeting a Raspberry Pi 7 inc
 It does not require any plugin and use the standard DREF UDP interface from X-Plane. It should not require any configuration. Start it and
 it will connect to X-Plane and fetch the required data.
 
-This is currently developed on macOS with python 3.9 and testing on a RaspberryPi 4 with raspberypiOS and an official 7 inches display in vertical mode.
+This is currently developed on macOS with python 3.9 and testing on a Raspberry Pi 4 with Raspberry Pi OS and an official 7 inches display in vertical mode.
 
 Below is a view of the user interface.
 
@@ -16,7 +16,6 @@ Below is a view of the user interface.
 And you can see it in its simulation environment
 
 ![flightSimView](assets/flightSimView.jpeg)
-
 
 ## Maturity
 
@@ -30,10 +29,10 @@ Not all the features of the G5 are implemented. It's currently missing:
 
 ## Installation
 
-`pyG5` depends on `PyQt5`. Due to failure to install `PyQt5` from pip on EaspberryPi OS it is not 
+`pyG5` depends on `PyQt5`. Due to failure to install `PyQt5` from pip on Raspberry Pi OS it is not
 a dependency of the `pyG5`. As a result it needs to be installed manually.
 
-RaspberryPi OS:
+Raspberry Pi OS:
 
 ```console
         > sudo apt-get install python3-pyqt5
@@ -57,7 +56,7 @@ The install `PyG5`:
         > pyG5DualStacked
 ```
 
-Running on RaspberryPi it is recommended to install FreeSans fonts in order to be consistent with the rendering on the current main development platform, ie. macOS. Most liked this is solved with:
+Running on Raspberry Pi it is recommended to install FreeSans fonts in order to be consistent with the rendering on the current main development platform, ie. macOS. Most liked this is solved with:
 
 ```console
         > sudo apt-get install libfreetype6
@@ -73,6 +72,42 @@ If you intend to develop based on this project. At a glance:
 * The view is repainting the interface every time the data is received from the network interface
 * The `pyG5Widget` is derived twice into and Horizontal Situation Indicator and an AI. the `pyG5DualStack` instantiate both into a single widget. That means it's easy to build the view with just one of them.
 * The `pyG5Main` module contains the application and the main window class.
+
+### Running from sources
+
+Clone the repository
+
+```console
+        > git clone 
+```
+
+Initialize the virtual environment
+
+```console
+        > source bootstrap.sh
+```
+
+Edit the python search path
+
+```console
+        > export PYTHONPATH=.
+```
+
+Start the Application
+
+```console
+        > python pyG5/pyG5Main.py 
+```
+
+In order to evaluate the design without X-Plane running you can use:
+
+```console
+        > python pyG5/pyG5ViewTester.py
+```
+
+This will feed the data from the sliders in the UI instead of the X-Plane network interface:
+
+![ViewTester](assets/pyG5ViewTester.png)
 
 ## License
 

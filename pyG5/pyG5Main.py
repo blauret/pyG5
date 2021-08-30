@@ -108,6 +108,8 @@ class pyG5MainWindow(QMainWindow):
         """
         QMainWindow.__init__(self, parent)
 
+        self.setStyleSheet("background-color: black;")
+
         target = "FreeSans"
 
         if target in QFontDatabase().families():
@@ -116,11 +118,16 @@ class pyG5MainWindow(QMainWindow):
             self.setFont(font)
 
         self.setWindowTitle(__appName__)
+
         self.file_menu = QMenu("&File", self)
         self.file_menu.addAction("&Quit", self.close, Qt.CTRL + Qt.Key_W)
+        self.file_menu.setStyleSheet("color : white;background: transparent;")
 
         menuBar = self.menuBar()
         menuBar.addMenu(self.file_menu)
+        menuBar.setStyleSheet(
+            """QMenuBar::item { color : white; background: transparent; }"""
+        )
 
         self.pyG5DualStacked = pyG5DualStack()
 
