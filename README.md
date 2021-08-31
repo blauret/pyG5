@@ -1,5 +1,7 @@
 # PyG5
 
+![CI](https://github.com/blauret/pyg5/workflows/CI/badge.svg?branch=main)
+
 ## Description
 
 This project aims at development a Garmin G5 view targeting a Raspberry Pi 7 inches display (640x480) . The intent is to provide a G5 Attitude indicator + G5 Horizontal Situation Indicator stacked on the display in vertical mode. The `pyG5` connects to X-Plane flight simulator.
