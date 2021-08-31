@@ -84,11 +84,17 @@ class pyG5Widget(QWidget):
             ("nav2fromto", 0),
             ("gpsfromto", 0),
             ("nav1crs", 0),
+            ("nav1gsavailable", 0),
+            ("nav1gs", 0),
             ("nav2crs", 0),
             ("gpscrs", 0),
+            ("nav2gsavailable", 0),
+            ("nav2gs", 0),
             ("nav1dft", 0),
             ("nav2dft", 0),
             ("gpsdft", 0),
+            ("gpsgsavailable", 0),
+            ("gpsgs", 0),
             ("groundTrack", 0),
             ("magHeading", 0),
             ("windDirection", 0),
@@ -287,24 +293,30 @@ class pyG5HSIWidget(pyG5Widget):
 
         if int(self._hsiSource) == 2:
             cdiSource = "GPS"
-            self.qp.setBrush(QBrush(Qt.magenta))
+            navColor = Qt.magenta
             navdft = self._gpsdft
             navfromto = self._gpsfromto
             navcrs = self._gpscrs
+            vertAvailable = self._gpsgsavailable
+            gsDev = self._gpsgs
         elif int(self._hsiSource) == 1:
             cdiSource = "VOR2"
-            self.qp.setBrush(QBrush(Qt.green))
+            navColor = Qt.green
             navdft = self._nav2dft
             navfromto = self._nav2fromto
             navcrs = self._nav2crs
-
+            vertAvailable = self._nav2gsavailable
+            gsDev = self._nav2gs
         else:
             cdiSource = "VOR1"
+            navColor = Qt.green
             navdft = self._nav1dft
             navfromto = self._nav1fromto
             navcrs = self._nav1crs
-            self.qp.setBrush(QBrush(Qt.green))
+            vertAvailable = self._nav1gsavailable
+            gsDev = self._nav1gs
 
+        self.qp.setBrush(QBrush(navColor))
         # Draw the CDI
         self.qp.rotate(90 - self._headingBug + navcrs)
 
@@ -556,6 +568,62 @@ class pyG5HSIWidget(pyG5Widget):
                 ]
             )
         )
+
+        # draw the GlideScope
+        gsWidth = 16
+        gsHeigth = 192
+        gsCircleRad = 10
+        gsFromLeft = 20
+        gsDiamond = 16
+
+        if vertAvailable:
+            self.setPen(2, greyColor)
+            self.qp.setBrush(QBrush(Qt.transparent))
+
+            self.qp.drawRect(
+                QRectF(
+                    g5Width - gsFromLeft - gsWidth,
+                    hsiCenter - gsHeigth / 2,
+                    gsWidth,
+                    gsHeigth,
+                )
+            )
+
+            self.qp.drawLine(
+                g5Width - gsFromLeft - gsWidth,
+                hsiCenter,
+                g5Width - gsFromLeft,
+                hsiCenter,
+            )
+
+            for offset in [-70, -35, 35, 70]:
+                self.qp.drawEllipse(
+                    QPoint(
+                        g5Width - gsFromLeft - gsWidth / 2,
+                        hsiCenter + offset,
+                    ),
+                    gsCircleRad / 2,
+                    gsCircleRad / 2,
+                )
+
+            self.setPen(1, Qt.black)
+            self.qp.setBrush(QBrush(navColor))
+
+            self.qp.translate(
+                g5Width - gsFromLeft - gsWidth, hsiCenter + gsDev / 2.5 * gsHeigth / 2
+            )
+            self.qp.drawPolygon(
+                QPolygonF(
+                    [
+                        QPointF(0, 0),
+                        QPointF(gsDiamond / 2, gsDiamond / 2),
+                        QPointF(gsDiamond, 0),
+                        QPointF(gsDiamond / 2, -gsDiamond / 2),
+                    ]
+                )
+            )
+
+            self.qp.resetTransform()
 
         # draw the CRS selection
 
@@ -1071,7 +1139,7 @@ class pyG5AIWidget(pyG5Widget):
 
         brush = QBrush(Qt.magenta)
         self.qp.setBrush(brush)
-        # print(self._kiasDelta)
+
         self.qp.drawRect(
             speedBoxLeftAlign + speedBoxWdith + 15,
             g5CenterY,
