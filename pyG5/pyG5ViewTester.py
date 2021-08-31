@@ -21,7 +21,7 @@ from PyQt5.QtWidgets import (
     QScrollArea,
 )
 
-from pyG5View import pyG5DualStack, g5Width, g5Height
+from pyG5.pyG5View import pyG5DualStack, g5Width, g5Height
 
 sliderWdith = 300
 
@@ -125,10 +125,16 @@ if __name__ == "__main__":
         makeControlDict("hsiSource", 0, 2),
         makeControlDict("nav1crs", 0, 360),
         makeControlDict("nav1dft", -3, 3),
+        makeControlDict("nav1gsavailable", 0, 1),
+        makeControlDict("nav1gs", -30, 30),
         makeControlDict("nav2crs", 0, 360),
         makeControlDict("nav2dft", -3, 3),
+        makeControlDict("nav2gsavailable", 0, 1),
+        makeControlDict("nav2gs", -30, 30),
         makeControlDict("gpscrs", 0, 360),
         makeControlDict("gpsdft", -3, 3),
+        makeControlDict("gpsgsavailable", 0, 1),
+        makeControlDict("gpsgs", -30, 30),
     ]
 
     for control in controls:

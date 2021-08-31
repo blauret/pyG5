@@ -96,13 +96,13 @@ Edit the python search path
 Start the Application
 
 ```console
-        > python pyG5/pyG5Main.py 
+        > python -m pyG5.pyG5Main
 ```
 
 In order to evaluate the design without X-Plane running you can use:
 
 ```console
-        > python pyG5/pyG5ViewTester.py
+        > python -m pyG5.pyG5ViewTester
 ```
 
 This will feed the data from the sliders in the UI instead of the X-Plane network interface:
