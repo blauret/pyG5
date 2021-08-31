@@ -13,11 +13,11 @@ This is currently developed on macOS with python 3.9 and testing on a Raspberry 
 
 Below is a view of the user interface.
 
-![demoView](assets/demoView.png)
+![demoView](https://raw.githubusercontent.com/blauret/pyG5/main/assets/demoView.png?raw=true)
 
 And you can see it in its simulation environment
 
-![flightSimView](assets/flightSimView.jpeg)
+![flightSimView](https://raw.githubusercontent.com/blauret/pyG5/main/assets/flightSimView.jpeg)
 
 ## Maturity
 
@@ -103,7 +103,7 @@ In order to evaluate the design without X-Plane running you can use:
 
 This will feed the data from the sliders in the UI instead of the X-Plane network interface:
 
-![ViewTester](assets/pyG5ViewTester.png)
+![ViewTester](https://raw.githubusercontent.com/blauret/pyG5/main/assets/pyG5ViewTester.png)
 
 ## License
 

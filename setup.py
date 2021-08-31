@@ -19,7 +19,7 @@ test_requirements = [
 ]
 
 PackageDescription = """
-    PyQt5 application connecting to X-Plane flifht simulator and displaying a garmin G5
+    PyQt5 application connecting to X-Plane flight simulator and displaying a garmin G5
     attitude indicator as well as Horizontal Situation indicator
 
 """
