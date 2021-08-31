@@ -29,8 +29,11 @@ jobs:
       run: |
         python setup.py sdist bdist_wheel
         twine upload dist/*
-    - name: Upload artifact
-      uses: actions/upload-artifact@v2
+    - name: Upload binaries to release
+      uses: svenstaro/upload-release-action@v2
       with:
-        name: wheel
-        path: ./dist/*.whl
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: ./dist/*.whl
+        tag: ${{ github.ref }}
+        overwrite: true
+        file_glob: true    
