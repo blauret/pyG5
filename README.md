@@ -87,12 +87,6 @@ Initialize the virtual environment
         > source bootstrap.sh
 ```
 
-Edit the python search path
-
-```console
-        > export PYTHONPATH=.
-```
-
 Start the Application
 
 ```console
