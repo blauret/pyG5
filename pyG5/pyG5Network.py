@@ -133,7 +133,7 @@ class pyG5NetWorkManager(QObject):
                 "_gpsfromto",
             ),
             (
-                "sim/cockpit/radios/nav1_course_degm",
+                "sim/cockpit/radios/nav1_obs_degm",
                 30,
                 "°",
                 "NAV1 CRS",
@@ -141,7 +141,7 @@ class pyG5NetWorkManager(QObject):
                 "_nav1crs",
             ),
             (
-                "sim/cockpit/radios/nav2_course_degm",
+                "sim/cockpit/radios/nav2_obs_degm",
                 30,
                 "°",
                 "NAV2 CRS",
@@ -301,7 +301,7 @@ class pyG5NetWorkManager(QObject):
                 "_slip",
             ),
             (
-                "sim/cockpit2/gauges/indicators/turn_rate_heading_deg_copilot",
+                "sim/cockpit2/gauges/indicators/turn_rate_heading_deg_pilot",
                 30,
                 "°",
                 "Turn Rate",
@@ -375,7 +375,7 @@ class pyG5NetWorkManager(QObject):
         self.udpSock.stateChanged.connect(self.socketStateHandler)
 
         # bind the socket
-        self.udpSock.bind(QHostAddress.AnyIPv4)
+        self.udpSock.bind(QHostAddress.AnyIPv4, 0, QUdpSocket.ShareAddress)
 
     @pyqtSlot()
     def reconnect(self):
@@ -415,7 +415,7 @@ class pyG5NetWorkManager(QObject):
 
         elif self.udpSock.state() == QAbstractSocket.UnconnectedState:
             # socket got disconnected issue reconnection
-            self.udpSock.bind(QHostAddress.AnyIPv4)
+            self.udpSock.bind(QHostAddress.AnyIPv4, 0, QUdpSocket.ShareAddress)
 
     @pyqtSlot()
     def dataHandler(self):
@@ -489,7 +489,7 @@ class pyG5MulticastListener(QObject):
         self.udpSock.stateChanged.connect(self.stateChangedSlot)
         self.udpSock.readyRead.connect(self.udpData)
         self.udpSock.connected.connect(self.connectedSlot)
-        self.udpSock.bind(QHostAddress.AnyIPv4, port=self.XPPort)
+        self.udpSock.bind(QHostAddress.AnyIPv4, self.XPPort, QUdpSocket.ShareAddress)
         if not self.udpSock.joinMulticastGroup(self.XPAddr):
             logging.error("Failed to join multicast group")
 
