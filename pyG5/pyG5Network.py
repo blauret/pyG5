@@ -85,12 +85,12 @@ class pyG5NetWorkManager(QObject):
                 "_nav2gsavailable",
             ),
             (
-                "sim/cockpit/radios/gps_has_glideslope",
+                "sim/cockpit2/radios/indicators/fms_fpta_pilot",
                 30,
                 "Gs",
                 "GPS GS available",
                 0,
-                "_gspgsavailable",
+                "_gpsgsavailable",
             ),
             (
                 "sim/cockpit2/gauges/indicators/airspeed_acceleration_kts_sec_pilot",

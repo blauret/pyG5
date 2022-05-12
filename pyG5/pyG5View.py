@@ -297,7 +297,7 @@ class pyG5HSIWidget(pyG5Widget):
             navdft = self._gpsdft
             navfromto = self._gpsfromto
             navcrs = self._gpscrs
-            vertAvailable = self._gpsgsavailable
+            vertAvailable = 1 if (self._gpsgsavailable != -1000) else  0
             gsDev = self._gpsgs
         elif int(self._hsiSource) == 1:
             cdiSource = "VOR2"
