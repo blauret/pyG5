@@ -28,7 +28,7 @@ g5CenterX = g5Width / 2
 g5Height = 360
 g5CenterY = g5Height / 2
 
-g5Diag = sqrt(g5Width ** 2 + g5Height ** 2)
+g5Diag = sqrt(g5Width**2 + g5Height**2)
 
 mstokt = 1.94384
 

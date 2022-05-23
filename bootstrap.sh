@@ -5,7 +5,7 @@ UNIX_ACTIVATE=".venv/bin/activate"
 
 if ! [ -e $UNIX_ACTIVATE ] || ! [ -e $WIN_ACTIVE ] ;
 then
-    python -m venv .venv
+    python3 -m venv .venv
 fi
 
 if [ -e $UNIX_ACTIVATE ] 
@@ -14,5 +14,5 @@ then
 else
     source $WIN_ACTIVATE
 fi
-
-pip install -r requirements.txt
+pip3 install wheel
+pip3 install -r requirements.txt
