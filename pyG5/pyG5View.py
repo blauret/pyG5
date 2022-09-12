@@ -28,7 +28,7 @@ g5CenterX = g5Width / 2
 g5Height = 360
 g5CenterY = g5Height / 2
 
-g5Diag = sqrt(g5Width ** 2 + g5Height ** 2)
+g5Diag = sqrt(g5Width**2 + g5Height**2)
 
 mstokt = 1.94384
 
@@ -810,13 +810,14 @@ class pyG5AIWidget(pyG5Widget):
         for lineParam in rollangleindicator:
             self.qp.drawLine(self.alongRadiusCoord(lineParam[0], lineParam[1]))
 
+        self.setPen(1, Qt.white)
         # draw the diamond on top of the roll arc
         self.qp.drawPolygon(
             QPolygonF(
                 [
                     QPointF(
                         0,
-                        -self.rollArcRadius,
+                        -self.rollArcRadius - 2,
                     ),
                     QPointF(-diamondWidth / 2, -self.rollArcRadius - diamondHeight),
                     QPointF(+diamondWidth / 2, -self.rollArcRadius - diamondHeight),
@@ -830,7 +831,7 @@ class pyG5AIWidget(pyG5Widget):
 
         fixedDiamond = QPolygonF(
             [
-                QPointF(g5CenterX, g5CenterY - self.rollArcRadius),
+                QPointF(g5CenterX, g5CenterY - self.rollArcRadius + 2),
                 QPointF(
                     g5CenterX + diamondWidth / 2,
                     g5CenterY - self.rollArcRadius + diamondHeight,
