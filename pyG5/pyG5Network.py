@@ -48,6 +48,14 @@ class pyG5NetWorkManager(QObject):
         self.datarefs = [
             # ( dataref, frequency, unit, description, num decimals to display in formatted output )
             (
+                "sim/cockpit/electrical/avionics_on",
+                1,
+                "boolean",
+                "Avionics powered on",
+                0,
+                "_avionicson",
+            ),
+            (
                 "sim/cockpit/radios/nav1_vdef_dot",
                 30,
                 "Dots",
@@ -112,7 +120,7 @@ class pyG5NetWorkManager(QObject):
                 "_hsiSource",
             ),
             (
-                "sim/cockpit/radios/nav1_fromto",
+                "sim/cockpit2/radios/indicators/nav1_flag_from_to_pilot",
                 30,
                 "°",
                 "NAV1 CRS",
@@ -120,7 +128,7 @@ class pyG5NetWorkManager(QObject):
                 "_nav1fromto",
             ),
             (
-                "sim/cockpit/radios/nav2_fromto",
+                "sim/cockpit2/radios/indicators/nav2_flag_from_to_pilot",
                 30,
                 "°",
                 "NAV2 CRS",
@@ -388,6 +396,7 @@ class pyG5NetWorkManager(QObject):
         self.logger.info("Connection Timeout expired")
 
         self.udpSock.close()
+        self.idleTimer.stop()
 
         # let the screensaver activate
         if platform.machine() in "armv7l":
@@ -397,6 +406,10 @@ class pyG5NetWorkManager(QObject):
     @pyqtSlot(QHostAddress, int)
     def xplaneConnect(self, addr, port):
         """Slot connecting triggering the connection to the XPlane."""
+        self.listener.xpInstance.disconnect(self.xplaneConnect)
+        self.listener.deleteLater()
+
+        self.logger.info("Request datatefs")
         # initiate connection
         for idx, dataref in enumerate(self.datarefs):
             cmd = b"RREF\x00"  # RREF command
