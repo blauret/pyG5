@@ -117,7 +117,7 @@ class pyG5NetWorkManager(QObject):
                 "_hsiSource",
             ),
             (
-                "sim/cockpit/radios/nav1_fromto",
+                "sim/cockpit2/radios/indicators/nav1_flag_from_to_pilot",
                 30,
                 "°",
                 "NAV1 CRS",
@@ -125,7 +125,7 @@ class pyG5NetWorkManager(QObject):
                 "_nav1fromto",
             ),
             (
-                "sim/cockpit/radios/nav2_fromto",
+                "sim/cockpit2/radios/indicators/nav2_flag_from_to_pilot",
                 30,
                 "°",
                 "NAV2 CRS",
@@ -406,6 +406,7 @@ class pyG5NetWorkManager(QObject):
             freq = dataref[1]
             ref = dataref[0].encode()
             message = struct.pack("<5sii400s", cmd, freq, idx, ref)
+            self.logger.info("Request datatefs: {}".format(ref))
             assert len(message) == 413
             self.udpSock.writeDatagram(message, addr, port)
 

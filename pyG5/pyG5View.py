@@ -354,36 +354,39 @@ class pyG5HSIWidget(pyG5Widget):
             )
         )
         # CDI deflection bar
-        hsiDeflectionBound = hsiCircleRadius / 75 * 2
-        deflection = max(min(navdft, hsiDeflectionBound), -hsiDeflectionBound) / 2 * 75
-        self.qp.drawPolygon(
-            QPolygonF(
-                [
-                    QPointF(hsiCircleRadius - 10, deflection - 3),
-                    QPointF(-hsiCircleRadius + 10, deflection - 3),
-                    QPointF(-hsiCircleRadius + 10, deflection + 3),
-                    QPointF(hsiCircleRadius - 10, deflection + 3),
-                ]
+        if int(navfromto) != 0:
+            hsiDeflectionBound = hsiCircleRadius / 75 * 2
+            deflection = (
+                max(min(navdft, hsiDeflectionBound), -hsiDeflectionBound) / 2 * 75
             )
-        )
-
-        # NAV1 FromTo
-        fromToTipX = 65
-        if int(navfromto) == 2:
-            self.qp.rotate(180)
-
-        self.qp.drawPolygon(
-            QPolygonF(
-                [
-                    QPointF(fromToTipX - 10, 0),
-                    QPointF(fromToTipX - 40, -20),
-                    QPointF(fromToTipX - 30, 0),
-                    QPointF(fromToTipX - 40, 20),
-                ]
+            self.qp.drawPolygon(
+                QPolygonF(
+                    [
+                        QPointF(hsiCircleRadius - 10, deflection - 3),
+                        QPointF(-hsiCircleRadius + 10, deflection - 3),
+                        QPointF(-hsiCircleRadius + 10, deflection + 3),
+                        QPointF(hsiCircleRadius - 10, deflection + 3),
+                    ]
+                )
             )
-        )
-        if int(navfromto) == 2:
-            self.qp.rotate(180)
+
+            # NAV1 FromTo
+            fromToTipX = 65
+            if int(navfromto) == 2:
+                self.qp.rotate(180)
+
+            self.qp.drawPolygon(
+                QPolygonF(
+                    [
+                        QPointF(fromToTipX - 10, 0),
+                        QPointF(fromToTipX - 40, -20),
+                        QPointF(fromToTipX - 30, 0),
+                        QPointF(fromToTipX - 40, 20),
+                    ]
+                )
+            )
+            if int(navfromto) == 2:
+                self.qp.rotate(180)
 
         self.qp.rotate(90)
         # CDI deflection circle
@@ -425,7 +428,7 @@ class pyG5HSIWidget(pyG5Widget):
 
         headingWidth = 105
         headingHeigth = 30
-        self.qp.drawRect(g5Width, g5Height, -headingWidth, -headingHeigth)
+        self.qp.drawRect(QRectF(g5Width, g5Height, -headingWidth, -headingHeigth))
 
         # draw the bug symbol
         self.setPen(1, Qt.cyan)
@@ -607,8 +610,8 @@ class pyG5HSIWidget(pyG5Widget):
             for offset in [-70, -35, 35, 70]:
                 self.qp.drawEllipse(
                     QPoint(
-                        g5Width - gsFromLeft - gsWidth / 2,
-                        hsiCenter + offset,
+                        int(g5Width - gsFromLeft - gsWidth / 2),
+                        int(hsiCenter + offset),
                     ),
                     gsCircleRad / 2,
                     gsCircleRad / 2,
@@ -974,7 +977,7 @@ class pyG5AIWidget(pyG5Widget):
         self.setPen(0, Qt.transparent)
 
         self.qp.setBrush(QBrush(QColor(0, 0, 0, 90)))
-        self.qp.drawRect(0, 0, speedBoxLeftAlign + speedBoxWdith + 15, g5Height)
+        self.qp.drawRect(QRectF(0, 0, speedBoxLeftAlign + speedBoxWdith + 15, g5Height))
 
         if (self._kias + tapeScale / 2) > self._vne:
 
@@ -982,10 +985,12 @@ class pyG5AIWidget(pyG5Widget):
             self.qp.setBrush(brush)
 
             self.qp.drawRect(
-                speedBoxLeftAlign + speedBoxWdith + 8,
-                0,
-                8,
-                (1 - 2 * (self._vne - self._kias) / tapeScale) * g5CenterY,
+                QRectF(
+                    speedBoxLeftAlign + speedBoxWdith + 8,
+                    0,
+                    8,
+                    (1 - 2 * (self._vne - self._kias) / tapeScale) * g5CenterY,
+                )
             )
 
         if (self._kias + tapeScale / 2) > self._vno:
@@ -994,10 +999,12 @@ class pyG5AIWidget(pyG5Widget):
             self.qp.setBrush(brush)
 
             self.qp.drawRect(
-                speedBoxLeftAlign + speedBoxWdith + 8,
-                (1 - 2 * (self._vne - self._kias) / tapeScale) * g5CenterY,
-                8,
-                (2 * (self._vne - self._vno) / tapeScale) * g5CenterY,
+                QRectF(
+                    speedBoxLeftAlign + speedBoxWdith + 8,
+                    (1 - 2 * (self._vne - self._kias) / tapeScale) * g5CenterY,
+                    8,
+                    (2 * (self._vne - self._vno) / tapeScale) * g5CenterY,
+                )
             )
 
         if (self._kias + tapeScale / 2) > self._vs:
@@ -1005,10 +1012,12 @@ class pyG5AIWidget(pyG5Widget):
             brush = QBrush(QColor(Qt.green))
             self.qp.setBrush(brush)
             self.qp.drawRect(
-                speedBoxLeftAlign + speedBoxWdith + 8,
-                max(0, (1 - 2 * (self._vno - self._kias) / tapeScale) * g5CenterY),
-                8,
-                (1 - 2 * (self._vs - self._kias) / tapeScale) * g5CenterY,
+                QRectF(
+                    speedBoxLeftAlign + speedBoxWdith + 8,
+                    max(0, (1 - 2 * (self._vno - self._kias) / tapeScale) * g5CenterY),
+                    8,
+                    (1 - 2 * (self._vs - self._kias) / tapeScale) * g5CenterY,
+                )
             )
 
         if (self._kias + tapeScale / 2) > self._vs:
@@ -1016,10 +1025,12 @@ class pyG5AIWidget(pyG5Widget):
             brush = QBrush(QColor(Qt.white))
             self.qp.setBrush(brush)
             self.qp.drawRect(
-                speedBoxLeftAlign + speedBoxWdith + 13,
-                max(0, (1 - 2 * (self._vfe - self._kias) / tapeScale) * g5CenterY),
-                3,
-                (1 - 2 * (self._vs0 - self._kias) / tapeScale) * g5CenterY,
+                QRectF(
+                    speedBoxLeftAlign + speedBoxWdith + 13,
+                    max(0, (1 - 2 * (self._vfe - self._kias) / tapeScale) * g5CenterY),
+                    3,
+                    (1 - 2 * (self._vs0 - self._kias) / tapeScale) * g5CenterY,
+                )
             )
 
         self.setPen(2, Qt.white)
@@ -1160,10 +1171,12 @@ class pyG5AIWidget(pyG5Widget):
         self.qp.setBrush(brush)
 
         self.qp.drawRect(
-            int(speedBoxLeftAlign + speedBoxWdith + 15),
-            int(g5CenterY),
-            int(speedDeltaWidth),
-            int(-2 * (self._kiasDelta * 10) / tapeScale * g5CenterY),
+            QRectF(
+                speedBoxLeftAlign + speedBoxWdith + 15,
+                g5CenterY,
+                speedDeltaWidth,
+                -2 * (self._kiasDelta * 10) / tapeScale * g5CenterY,
+            )
         )
 
         #################################################
@@ -1185,7 +1198,7 @@ class pyG5AIWidget(pyG5Widget):
         self.setPen(0, Qt.transparent)
         self.qp.setBrush(QBrush(QColor(0, 0, 0, 90)))
         self.qp.drawRect(
-            int(alttapteLeftBound), 0, int(g5Width - alttapteLeftBound), int(g5Height)
+            QRectF(alttapteLeftBound, 0, g5Width - alttapteLeftBound, int(g5Height))
         )
         self.setPen(2, Qt.white)
 
@@ -1383,16 +1396,20 @@ class pyG5AIWidget(pyG5Widget):
         self.qp.setBrush(QBrush(QColor(220, 220, 220)))
 
         self.qp.drawRect(
-            int(g5CenterX - slipballRadius),
-            int(slipballHeigh - slipballRadius),
-            int(-slipballMarkeWidth),
-            int(2 * slipballRadius),
+            QRectF(
+                g5CenterX - slipballRadius,
+                slipballHeigh - slipballRadius,
+                -slipballMarkeWidth,
+                2 * slipballRadius,
+            )
         )
         self.qp.drawRect(
-            int(g5CenterX + slipballRadius),
-            int(slipballHeigh - slipballRadius),
-            int(slipballMarkeWidth),
-            int(2 * slipballRadius),
+            QRectF(
+                g5CenterX + slipballRadius,
+                slipballHeigh - slipballRadius,
+                slipballMarkeWidth,
+                2 * slipballRadius,
+            )
         )
         # set slip ball gradian
         grad = QRadialGradient(
