@@ -4,6 +4,7 @@ Created on 8 Aug 2021.
 @author: Ben Lauret
 """
 
+import platform
 import logging
 import struct
 import binascii
