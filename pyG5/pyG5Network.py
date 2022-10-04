@@ -4,9 +4,13 @@ Created on 8 Aug 2021.
 @author: Ben Lauret
 """
 
+import platform
 import logging
 import struct
 import binascii
+import dbus
+import os
+
 
 from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal, QTimer
 
@@ -44,6 +48,14 @@ class pyG5NetWorkManager(QObject):
         # list the datarefs to request
         self.datarefs = [
             # ( dataref, frequency, unit, description, num decimals to display in formatted output )
+            (
+                "sim/cockpit/electrical/avionics_on",
+                1,
+                "boolean",
+                "Avionics powered on",
+                0,
+                "_avionicson",
+            ),
             (
                 "sim/cockpit/radios/nav1_vdef_dot",
                 30,
@@ -109,7 +121,7 @@ class pyG5NetWorkManager(QObject):
                 "_hsiSource",
             ),
             (
-                "sim/cockpit/radios/nav1_fromto",
+                "sim/cockpit2/radios/indicators/nav1_flag_from_to_pilot",
                 30,
                 "°",
                 "NAV1 CRS",
@@ -117,7 +129,7 @@ class pyG5NetWorkManager(QObject):
                 "_nav1fromto",
             ),
             (
-                "sim/cockpit/radios/nav2_fromto",
+                "sim/cockpit2/radios/indicators/nav2_flag_from_to_pilot",
                 30,
                 "°",
                 "NAV2 CRS",
@@ -377,16 +389,28 @@ class pyG5NetWorkManager(QObject):
         # bind the socket
         self.udpSock.bind(QHostAddress.AnyIPv4, 0, QUdpSocket.ShareAddress)
 
+        bus = dbus.SessionBus()
+
     @pyqtSlot()
     def reconnect(self):
         """Idle timer expired. Trigger reconnection process."""
         self.logger.info("Connection Timeout expired")
 
         self.udpSock.close()
+        self.idleTimer.stop()
+
+        # let the screensaver activate
+        if platform.machine() in "armv7l":
+            os.system("xset s on")
+            os.system("xset s 1")
 
     @pyqtSlot(QHostAddress, int)
     def xplaneConnect(self, addr, port):
         """Slot connecting triggering the connection to the XPlane."""
+        self.listener.xpInstance.disconnect(self.xplaneConnect)
+        self.listener.deleteLater()
+
+        self.logger.info("Request datatefs")
         # initiate connection
         for idx, dataref in enumerate(self.datarefs):
             cmd = b"RREF\x00"  # RREF command
@@ -399,6 +423,12 @@ class pyG5NetWorkManager(QObject):
 
         # start the idle timer
         self.idleTimer.start(self.idleTimerDuration)
+
+        # now we can inhibit the screensaver
+        if platform.machine() in "armv7l":
+            os.system("xset s reset")
+            os.system("xset s off")
+        
 
     @pyqtSlot()
     def socketStateHandler(self):

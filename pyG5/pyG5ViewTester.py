@@ -108,6 +108,7 @@ if __name__ == "__main__":
     hlayout.addWidget(g5View)
 
     controls = [
+        makeControlDict("avionicson", 0, 1),
         makeControlDict("magHeading", 0, 360),
         makeControlDict("groundTrack", 0, 360),
         makeControlDict("pitchAngle", -25, +25),
