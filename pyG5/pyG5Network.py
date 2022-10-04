@@ -391,17 +391,21 @@ class pyG5NetWorkManager(QObject):
         self.logger.info("Connection Timeout expired")
 
         self.udpSock.close()
+        self.idleTimer.stop()
 
     @pyqtSlot(QHostAddress, int)
     def xplaneConnect(self, addr, port):
         """Slot connecting triggering the connection to the XPlane."""
+        self.listener.xpInstance.disconnect(self.xplaneConnect)
+        self.listener.deleteLater()
+
+        self.logger.info("Request datatefs")
         # initiate connection
         for idx, dataref in enumerate(self.datarefs):
             cmd = b"RREF\x00"  # RREF command
             freq = dataref[1]
             ref = dataref[0].encode()
             message = struct.pack("<5sii400s", cmd, freq, idx, ref)
-            self.logger.info("Request datatefs: {}".format(ref))
             assert len(message) == 413
             self.udpSock.writeDatagram(message, addr, port)
 
