@@ -79,6 +79,7 @@ class pyG5Widget(QWidget):
 
         """property name, default value"""
         propertyList = [
+            ("avionicson", 0),
             ("hsiSource", 0),
             ("nav1fromto", 0),
             ("nav2fromto", 0),
@@ -185,9 +186,16 @@ class pyG5HSIWidget(pyG5Widget):
         self.qp.setFont(font)
 
         # Draw the background
-        self.setPen(1, Qt.white)
+        self.setPen(1, Qt.black)
         self.qp.setBrush(QBrush(Qt.black))
         self.qp.drawRect(0, 0, g5Width, g5Height)
+
+        if self._avionicson == 0:
+            self.setPen(1, Qt.white)
+            self.qp.drawLine(0, 0, g5Width, g5Height)
+            self.qp.drawLine(0, g5Height, g5Width, 0)
+            self.qp.end()
+            return
 
         # Draw the Horizontal Situation Indicator circle
         self.setPen(2, greyColor)
@@ -685,6 +693,16 @@ class pyG5AIWidget(pyG5Widget):
 
         self.qp = QPainter(self)
 
+        if self._avionicson == 0:
+            self.setPen(1, Qt.black)
+            self.qp.setBrush(QBrush(Qt.black))
+            self.qp.drawRect(0, 0, g5Width, g5Height)
+            self.setPen(1, Qt.white)
+            self.qp.drawLine(0, 0, g5Width, g5Height)
+            self.qp.drawLine(0, g5Height, g5Width, 0)
+            self.qp.end()
+            return
+
         # set default font size
         font = self.qp.font()
         font.setPixelSize(6)
@@ -750,8 +768,8 @@ class pyG5AIWidget(pyG5Widget):
                 ),
             )
             if width[mode] == 30:
-                self.qp.drawText(QPoint(30 + 3, height + 2), str(int(pitch)))
-                self.qp.drawText(QPoint(-40, height + 2), str(int(pitch)))
+                self.qp.drawText(QPoint(30 + 3, int(height + 2)), str(int(pitch)))
+                self.qp.drawText(QPoint(-40, int(height + 2)), str(int(pitch)))
             mode = (mode + 1) % 4
 
         height = 0
@@ -775,8 +793,8 @@ class pyG5AIWidget(pyG5Widget):
                 ),
             )
             if width[mode] == 30:
-                self.qp.drawText(QPoint(30 + 3, height + 2), str(abs(int(pitch))))
-                self.qp.drawText(QPoint(-40, height + 2), str(abs(int(pitch))))
+                self.qp.drawText(QPoint(30 + 3, int(height + 2)), str(abs(int(pitch))))
+                self.qp.drawText(QPoint(-40, int(height + 2)), str(abs(int(pitch))))
 
             mode = (mode + 1) % 4
 
@@ -1142,10 +1160,10 @@ class pyG5AIWidget(pyG5Widget):
         self.qp.setBrush(brush)
 
         self.qp.drawRect(
-            speedBoxLeftAlign + speedBoxWdith + 15,
-            g5CenterY,
-            speedDeltaWidth,
-            -2 * (self._kiasDelta * 10) / tapeScale * g5CenterY,
+            int(speedBoxLeftAlign + speedBoxWdith + 15),
+            int(g5CenterY),
+            int(speedDeltaWidth),
+            int(-2 * (self._kiasDelta * 10) / tapeScale * g5CenterY),
         )
 
         #################################################
@@ -1166,7 +1184,9 @@ class pyG5AIWidget(pyG5Widget):
         alttapteLeftBound = altTapeLeftAlign - 1.5 * altBoxSpikedimension
         self.setPen(0, Qt.transparent)
         self.qp.setBrush(QBrush(QColor(0, 0, 0, 90)))
-        self.qp.drawRect(alttapteLeftBound, 0, g5Width - alttapteLeftBound, g5Height)
+        self.qp.drawRect(
+            int(alttapteLeftBound), 0, int(g5Width - alttapteLeftBound), int(g5Height)
+        )
         self.setPen(2, Qt.white)
 
         self.qp.setBackgroundMode(Qt.TransparentMode)
@@ -1363,16 +1383,16 @@ class pyG5AIWidget(pyG5Widget):
         self.qp.setBrush(QBrush(QColor(220, 220, 220)))
 
         self.qp.drawRect(
-            g5CenterX - slipballRadius,
-            slipballHeigh - slipballRadius,
-            -slipballMarkeWidth,
-            2 * slipballRadius,
+            int(g5CenterX - slipballRadius),
+            int(slipballHeigh - slipballRadius),
+            int(-slipballMarkeWidth),
+            int(2 * slipballRadius),
         )
         self.qp.drawRect(
-            g5CenterX + slipballRadius,
-            slipballHeigh - slipballRadius,
-            slipballMarkeWidth,
-            2 * slipballRadius,
+            int(g5CenterX + slipballRadius),
+            int(slipballHeigh - slipballRadius),
+            int(slipballMarkeWidth),
+            int(2 * slipballRadius),
         )
         # set slip ball gradian
         grad = QRadialGradient(
@@ -1388,8 +1408,10 @@ class pyG5AIWidget(pyG5Widget):
 
         self.qp.drawEllipse(
             QPoint(
-                g5CenterX - self._slip * slipballMovementMax * slipballMovementWdith,
-                slipballHeigh,
+                int(
+                    g5CenterX - self._slip * slipballMovementMax * slipballMovementWdith
+                ),
+                int(slipballHeigh),
             ),
             slipballRadius,
             slipballRadius,

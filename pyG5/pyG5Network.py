@@ -45,6 +45,14 @@ class pyG5NetWorkManager(QObject):
         self.datarefs = [
             # ( dataref, frequency, unit, description, num decimals to display in formatted output )
             (
+                "sim/cockpit/electrical/avionics_on",
+                1,
+                "boolean",
+                "Avionics powered on",
+                0,
+                "_avionicson",
+            ),
+            (
                 "sim/cockpit/radios/nav1_vdef_dot",
                 30,
                 "Dots",
