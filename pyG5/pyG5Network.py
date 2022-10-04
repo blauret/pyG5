@@ -8,6 +8,7 @@ import logging
 import struct
 import binascii
 import dbus
+import os
 
 
 from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal, QTimer
@@ -380,10 +381,6 @@ class pyG5NetWorkManager(QObject):
         self.udpSock.bind(QHostAddress.AnyIPv4, 0, QUdpSocket.ShareAddress)
 
         bus = dbus.SessionBus()
-        saver = bus.get_object("org.freedesktop.ScreenSaver", "/ScreenSaver")
-        self.saver_interface = dbus.Interface(
-            saver, dbus_interface="org.freedesktop.ScreenSaver"
-        )
 
     @pyqtSlot()
     def reconnect(self):
@@ -393,7 +390,9 @@ class pyG5NetWorkManager(QObject):
         self.udpSock.close()
 
         # let the screensaver activate
-        self.saver_interface.UnInhibit(self.cookie)
+        if platform.machine() in "armv7l":
+            os.system("xset s on")
+            os.system("xset s 1")
 
     @pyqtSlot(QHostAddress, int)
     def xplaneConnect(self, addr, port):
@@ -412,7 +411,10 @@ class pyG5NetWorkManager(QObject):
         self.idleTimer.start(self.idleTimerDuration)
 
         # now we can inhibit the screensaver
-        self.cookie = self.saver_interface.Inhibit(__file__, "connected")
+        if platform.machine() in "armv7l":
+            os.system("xset s reset")
+            os.system("xset s off")
+        
 
     @pyqtSlot()
     def socketStateHandler(self):
