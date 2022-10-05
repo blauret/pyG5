@@ -1,7 +1,6 @@
 backports.entry-points-selectable==1.1.0
 cfgv==3.3.0
 codespell==2.1.0
-dbus-python==1.2.18
 distlib==0.3.2
 filelock==3.0.12
 flake8==3.9.2
