@@ -9,12 +9,13 @@ import logging
 import struct
 import binascii
 import os
-
+from datetime import datetime as datetime_, timedelta
 
 from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal, QTimer
 
 from PyQt5.QtNetwork import QUdpSocket, QHostAddress, QAbstractSocket
 
+from  PyQt5 import QtGui
 
 class pyG5NetWorkManager(QObject):
     """pyG5NetWorkManager Object.
@@ -48,7 +49,15 @@ class pyG5NetWorkManager(QObject):
         self.datarefs = [
             # ( dataref, frequency, unit, description, num decimals to display in formatted output )
             (
-                "sim/cockpit/radios/nav_type[0]",
+                "sim/cockpit/radios/gps_hdef_nm_per_dot",
+                1,
+                "boolean",
+                "Avionics powered on",
+                0,
+                "_gpshsisens",
+            ),
+            (
+                "sim/cockpit/radios/",
                 1,
                 "boolean",
                 "Avionics powered on",
@@ -64,7 +73,7 @@ class pyG5NetWorkManager(QObject):
                 "_nav2type",
             ),
             (
-                "sim/cockpit/radios/nav_type[4]",
+                "sim/cockpit/gps/destination_type",
                 1,
                 "boolean",
                 "Avionics powered on",
@@ -441,6 +450,9 @@ class pyG5NetWorkManager(QObject):
             self.logger.info("Request datatefs: {}".format(ref))
             assert len(message) == 413
             self.udpSock.writeDatagram(message, addr, port)
+            end = datetime_.now() + timedelta(milliseconds=20)
+            while datetime_.now() < end:
+                QtGui.QGuiApplication.processEvents()
 
         # start the idle timer
         self.idleTimer.start(self.idleTimerDuration)
@@ -449,7 +461,6 @@ class pyG5NetWorkManager(QObject):
         if platform.machine() in "armv7l":
             os.system("xset s reset")
             os.system("xset s off")
-        
 
     @pyqtSlot()
     def socketStateHandler(self):
@@ -499,7 +510,7 @@ class pyG5NetWorkManager(QObject):
                         self.datarefs[idx][0],
                         self.datarefs[idx][5],
                     )
-                    if idx <= 2:
+                    if idx <= 0:
                         print("idx: {}, value: {}".format(idx, value))
                 self.drefUpdate.emit(retvalues)
 
