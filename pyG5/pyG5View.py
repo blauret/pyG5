@@ -79,6 +79,11 @@ class pyG5Widget(QWidget):
 
         """property name, default value"""
         propertyList = [
+            ("gpsdmedist", 0),
+            ("gpshsisens", 0),
+            ("nav1type", 0),
+            ("nav2type", 0),
+            ("gpstype", 0),
             ("avionicson", 0),
             ("hsiSource", 0),
             ("nav1fromto", 0),
@@ -95,6 +100,7 @@ class pyG5Widget(QWidget):
             ("nav2dft", 0),
             ("gpsdft", 0),
             ("gpsgsavailable", 0),
+            ("gpsvnavavailable", 0),
             ("gpsgs", 0),
             ("groundTrack", 0),
             ("magHeading", 0),
@@ -165,6 +171,26 @@ class pyG5HSIWidget(pyG5Widget):
             self
         """
         pyG5Widget.__init__(self, parent)
+
+    def getNavTypeString(self, navType, navIndex):
+        """getNavTypeString.
+
+        Args:
+            type: type number
+
+        Returns:
+            string
+        """
+        value = int(navType)
+
+        if value == 0:
+            return ""
+        elif value == 3:
+            return "VOR" + navIndex
+        elif value >= 4:
+            return "LOC" + navIndex
+
+        logging.error("Failed to decode navtype")
 
     def paintEvent(self, event):
         """Paint the widget."""
@@ -298,17 +324,33 @@ class pyG5HSIWidget(pyG5Widget):
         )
 
         self.setPen(1, Qt.black)
-
+        gpscdianonciator = ""
         if int(self._hsiSource) == 2:
             cdiSource = "GPS"
+
+            sensi = round(self._gpshsisens, 1)
+            if sensi <= 0.1:
+                gpscdianonciator = "LNAV"
+            elif sensi == 0.12:
+                gpscdianonciator = "DEPT"
+            elif sensi == 0.4:
+                gpscdianonciator = "TERM"
+            elif sensi == 0.8:
+                gpscdianonciator = "ENR"
+            else:
+                gpscdianonciator = ""
+
             navColor = Qt.magenta
             navdft = self._gpsdft
             navfromto = self._gpsfromto
             navcrs = self._gpscrs
-            vertAvailable = 1 if (self._gpsgsavailable != -1000) else 0
+            if (self._gpsvnavavailable != -1000) or self._gpsgsavailable:
+                vertAvailable = 1
+            else:
+                vertAvailable = 0
             gsDev = self._gpsgs
         elif int(self._hsiSource) == 1:
-            cdiSource = "VOR2"
+            cdiSource = "{}".format(self.getNavTypeString(self._nav2type, "2"))
             navColor = Qt.green
             navdft = self._nav2dft
             navfromto = self._nav2fromto
@@ -316,7 +358,7 @@ class pyG5HSIWidget(pyG5Widget):
             vertAvailable = self._nav2gsavailable
             gsDev = self._nav2gs
         else:
-            cdiSource = "VOR1"
+            cdiSource = "{}".format(self.getNavTypeString(self._nav1type, "1"))
             navColor = Qt.green
             navdft = self._nav1dft
             navfromto = self._nav1fromto
@@ -422,6 +464,13 @@ class pyG5HSIWidget(pyG5Widget):
             cdiSource,
         )
 
+        if len(gpscdianonciator):
+            self.qp.drawText(
+                QRectF(g5CenterX + 25, hsiCenter - 50, 65, 18),
+                Qt.AlignLeft | Qt.AlignVCenter,
+                gpscdianonciator,
+            )
+
         # Draw the heading Bug indicator bottom corner
         self.setPen(2, Qt.cyan)
         self.qp.setBrush(QBrush(Qt.black))
@@ -449,17 +498,46 @@ class pyG5HSIWidget(pyG5Widget):
             )
         )
 
-        # set default font size
-        font = self.qp.font()
-        font.setPixelSize(18)
-        font.setBold(True)
-        self.qp.setFont(font)
-
         self.qp.drawText(
             QRectF(412, 336, 65, 18),
             Qt.AlignLeft | Qt.AlignVCenter,
             "{:03d}˚".format(int(self._headingBug)),
         )
+
+        # draw the dist box
+        if int(self._hsiSource) == 2:
+            font.setPixelSize(12)
+            font.setBold(False)
+            self.qp.setFont(font)
+            distRect = QRectF(g5Width - 105, 0, 105, 45)
+
+            self.setPen(2, greyColor)
+            self.qp.setBrush(QBrush(Qt.black))
+            self.qp.drawRect(distRect)
+
+            self.qp.drawText(
+                distRect,
+                Qt.AlignHCenter | Qt.AlignTop,
+                "Dist NM",
+            )
+
+            font.setPixelSize(18)
+            font.setBold(True)
+            self.qp.setFont(font)
+            self.setPen(1, navColor)
+
+            distRect = QRectF(g5Width - 105, 12, 105, 45 - 12)
+            self.qp.drawText(
+                distRect,
+                Qt.AlignCenter,
+                "{}".format(round(self._gpsdmedist, 1)),
+            )
+
+        # set default font size
+        font = self.qp.font()
+        font.setPixelSize(18)
+        font.setBold(True)
+        self.qp.setFont(font)
 
         # draw the wind box
         self.setPen(2, greyColor)
@@ -588,9 +666,30 @@ class pyG5HSIWidget(pyG5Widget):
         gsDiamond = 16
 
         if vertAvailable:
+            # Vertical guidance source
+            rect = QRectF(
+                g5Width - gsFromLeft - gsWidth,
+                hsiCenter - gsHeigth / 2 - 15,
+                gsWidth,
+                15,
+            )
+
+            font.setPixelSize(12)
+            self.qp.setFont(font)
+            self.setPen(1, navColor)
+
+            self.qp.drawText(
+                rect,
+                Qt.AlignCenter | Qt.AlignVCenter,
+                "G" if self._gpsgsavailable else "V",
+            )
+
             self.setPen(2, greyColor)
             self.qp.setBrush(QBrush(Qt.transparent))
 
+            self.qp.drawRect(rect)
+
+            # main rectangle
             self.qp.drawRect(
                 QRectF(
                     g5Width - gsFromLeft - gsWidth,

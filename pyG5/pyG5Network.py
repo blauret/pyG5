@@ -9,11 +9,13 @@ import logging
 import struct
 import binascii
 import os
-
+from datetime import datetime as datetime_, timedelta
 
 from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal, QTimer
 
 from PyQt5.QtNetwork import QUdpSocket, QHostAddress, QAbstractSocket
+
+from PyQt5 import QtGui
 
 
 class pyG5NetWorkManager(QObject):
@@ -43,12 +45,60 @@ class pyG5NetWorkManager(QObject):
             self
         """
         QObject.__init__(self, parent)
-
+        # sim/cockpit/radios/gps_cdi_sensitivity	int	n	enum	GPS CDI sensitivity: 0=OCN, 1=ENR, 2=TERM, 3=DPRT, 4=MAPR, 5=APR, 6=RNPAR, 7=LNAV, 8=LNAV+V, 9=L/VNAV, 10=LP, 11=LPV, 12=LP+V, 13=GLS
         # list the datarefs to request
         self.datarefs = [
             # ( dataref, frequency, unit, description, num decimals to display in formatted output )
             (
-                "sim/cockpit/radios/nav_type[0]",
+                "sim/cockpit/radios/gps_dme_dist_m",
+                1,
+                "Gs",
+                "GPS GS available",
+                0,
+                "_gpsdmedist",
+            ),
+            (
+                "sim/cockpit2/radios/indicators/fms_fpta_pilot",
+                1,
+                "Gs",
+                "GPS GS available",
+                0,
+                "_gpsvnavavailable",
+            ),
+            (
+                "sim/cockpit/radios/gps_cdi_sensitivity",
+                1,
+                "boolean",
+                "Avionics powered on",
+                0,
+                "_test",
+            ),
+            (
+                "sim/cockpit/radios/gps_has_glideslope",
+                1,
+                "Gs",
+                "GPS GS available",
+                0,
+                "_gpsgsavailable",
+            ),
+            (
+                "sim/cockpit/radios/gps_hdef_nm_per_dot",
+                1,
+                "boolean",
+                "Avionics powered on",
+                0,
+                "_gpshsisens",
+            ),
+            (
+                "sim/cockpit/radios/gps_gp_mtr_per_dot",
+                1,
+                "boolean",
+                "Avionics powered on",
+                0,
+                "_gpsvsens",
+            ),
+            (
+                "sim/cockpit/radios/",
                 1,
                 "boolean",
                 "Avionics powered on",
@@ -64,7 +114,7 @@ class pyG5NetWorkManager(QObject):
                 "_nav2type",
             ),
             (
-                "sim/cockpit/radios/nav_type[4]",
+                "sim/cockpit/gps/destination_type",
                 1,
                 "boolean",
                 "Avionics powered on",
@@ -118,14 +168,6 @@ class pyG5NetWorkManager(QObject):
                 "Nav 2 GS available",
                 0,
                 "_nav2gsavailable",
-            ),
-            (
-                "sim/cockpit2/radios/indicators/fms_fpta_pilot",
-                30,
-                "Gs",
-                "GPS GS available",
-                0,
-                "_gpsgsavailable",
             ),
             (
                 "sim/cockpit2/gauges/indicators/airspeed_acceleration_kts_sec_pilot",
@@ -441,6 +483,9 @@ class pyG5NetWorkManager(QObject):
             self.logger.info("Request datatefs: {}".format(ref))
             assert len(message) == 413
             self.udpSock.writeDatagram(message, addr, port)
+            end = datetime_.now() + timedelta(milliseconds=20)
+            while datetime_.now() < end:
+                QtGui.QGuiApplication.processEvents()
 
         # start the idle timer
         self.idleTimer.start(self.idleTimerDuration)
@@ -449,7 +494,6 @@ class pyG5NetWorkManager(QObject):
         if platform.machine() in "armv7l":
             os.system("xset s reset")
             os.system("xset s off")
-        
 
     @pyqtSlot()
     def socketStateHandler(self):
@@ -499,8 +543,8 @@ class pyG5NetWorkManager(QObject):
                         self.datarefs[idx][0],
                         self.datarefs[idx][5],
                     )
-                    if idx <= 2:
-                        print("idx: {}, value: {}".format(idx, value))
+                    # if idx <= 2:
+                    #     print("idx: {}, value: {}".format(idx, value))
                 self.drefUpdate.emit(retvalues)
 
 
