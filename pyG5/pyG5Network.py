@@ -8,7 +8,6 @@ import platform
 import logging
 import struct
 import binascii
-import dbus
 import os
 
 
@@ -48,6 +47,30 @@ class pyG5NetWorkManager(QObject):
         # list the datarefs to request
         self.datarefs = [
             # ( dataref, frequency, unit, description, num decimals to display in formatted output )
+            (
+                "sim/cockpit/radios/nav_type[0]",
+                1,
+                "boolean",
+                "Avionics powered on",
+                0,
+                "_nav1type",
+            ),
+            (
+                "sim/cockpit/radios/nav_type[1]",
+                1,
+                "boolean",
+                "Avionics powered on",
+                0,
+                "_nav2type",
+            ),
+            (
+                "sim/cockpit/radios/nav_type[4]",
+                1,
+                "boolean",
+                "Avionics powered on",
+                0,
+                "_gpstype",
+            ),
             (
                 "sim/cockpit/electrical/avionics_on",
                 1,
@@ -389,8 +412,6 @@ class pyG5NetWorkManager(QObject):
         # bind the socket
         self.udpSock.bind(QHostAddress.AnyIPv4, 0, QUdpSocket.ShareAddress)
 
-        bus = dbus.SessionBus()
-
     @pyqtSlot()
     def reconnect(self):
         """Idle timer expired. Trigger reconnection process."""
@@ -478,6 +499,8 @@ class pyG5NetWorkManager(QObject):
                         self.datarefs[idx][0],
                         self.datarefs[idx][5],
                     )
+                    if idx <= 2:
+                        print("idx: {}, value: {}".format(idx, value))
                 self.drefUpdate.emit(retvalues)
 
 
