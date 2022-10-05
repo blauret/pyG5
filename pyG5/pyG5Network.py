@@ -15,7 +15,8 @@ from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal, QTimer
 
 from PyQt5.QtNetwork import QUdpSocket, QHostAddress, QAbstractSocket
 
-from  PyQt5 import QtGui
+from PyQt5 import QtGui
+
 
 class pyG5NetWorkManager(QObject):
     """pyG5NetWorkManager Object.
@@ -44,7 +45,7 @@ class pyG5NetWorkManager(QObject):
             self
         """
         QObject.__init__(self, parent)
-        #sim/cockpit/radios/gps_cdi_sensitivity	int	n	enum	GPS CDI sensitivity: 0=OCN, 1=ENR, 2=TERM, 3=DPRT, 4=MAPR, 5=APR, 6=RNPAR, 7=LNAV, 8=LNAV+V, 9=L/VNAV, 10=LP, 11=LPV, 12=LP+V, 13=GLS
+        # sim/cockpit/radios/gps_cdi_sensitivity	int	n	enum	GPS CDI sensitivity: 0=OCN, 1=ENR, 2=TERM, 3=DPRT, 4=MAPR, 5=APR, 6=RNPAR, 7=LNAV, 8=LNAV+V, 9=L/VNAV, 10=LP, 11=LPV, 12=LP+V, 13=GLS
         # list the datarefs to request
         self.datarefs = [
             # ( dataref, frequency, unit, description, num decimals to display in formatted output )

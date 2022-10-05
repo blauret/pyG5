@@ -324,11 +324,11 @@ class pyG5HSIWidget(pyG5Widget):
         )
 
         self.setPen(1, Qt.black)
-        gpscdianonciator = ''
+        gpscdianonciator = ""
         if int(self._hsiSource) == 2:
             cdiSource = "GPS"
 
-            sensi = round(self._gpshsisens,1)
+            sensi = round(self._gpshsisens, 1)
             if sensi <= 0.1:
                 gpscdianonciator = "LNAV"
             elif sensi == 0.12:
@@ -339,12 +339,12 @@ class pyG5HSIWidget(pyG5Widget):
                 gpscdianonciator = "ENR"
             else:
                 gpscdianonciator = ""
-            
+
             navColor = Qt.magenta
             navdft = self._gpsdft
             navfromto = self._gpsfromto
             navcrs = self._gpscrs
-            if (self._gpsvnavavailable  != -1000) or self._gpsgsavailable:
+            if (self._gpsvnavavailable != -1000) or self._gpsgsavailable:
                 vertAvailable = 1
             else:
                 vertAvailable = 0
@@ -498,7 +498,6 @@ class pyG5HSIWidget(pyG5Widget):
             )
         )
 
-
         self.qp.drawText(
             QRectF(412, 336, 65, 18),
             Qt.AlignLeft | Qt.AlignVCenter,
@@ -506,7 +505,7 @@ class pyG5HSIWidget(pyG5Widget):
         )
 
         # draw the dist box
-        if int(self._hsiSource) == 2: 
+        if int(self._hsiSource) == 2:
             font.setPixelSize(12)
             font.setBold(False)
             self.qp.setFont(font)
@@ -527,13 +526,12 @@ class pyG5HSIWidget(pyG5Widget):
             self.qp.setFont(font)
             self.setPen(1, navColor)
 
-            distRect = QRectF(g5Width - 105, 12, 105, 45 -12)
+            distRect = QRectF(g5Width - 105, 12, 105, 45 - 12)
             self.qp.drawText(
                 distRect,
                 Qt.AlignCenter,
-                "{}".format(round(self._gpsdmedist,1)),
+                "{}".format(round(self._gpsdmedist, 1)),
             )
-
 
         # set default font size
         font = self.qp.font()
@@ -669,12 +667,12 @@ class pyG5HSIWidget(pyG5Widget):
 
         if vertAvailable:
             # Vertical guidance source
-            rect =  QRectF(
-                    g5Width - gsFromLeft - gsWidth,
-                    hsiCenter - gsHeigth / 2 -15,
-                    gsWidth,
-                    15,
-                )
+            rect = QRectF(
+                g5Width - gsFromLeft - gsWidth,
+                hsiCenter - gsHeigth / 2 - 15,
+                gsWidth,
+                15,
+            )
 
             font.setPixelSize(12)
             self.qp.setFont(font)
@@ -689,10 +687,7 @@ class pyG5HSIWidget(pyG5Widget):
             self.setPen(2, greyColor)
             self.qp.setBrush(QBrush(Qt.transparent))
 
-
-
             self.qp.drawRect(rect)
-
 
             # main rectangle
             self.qp.drawRect(
