@@ -678,10 +678,14 @@ class pyG5HSIWidget(pyG5Widget):
             self.qp.setFont(font)
             self.setPen(1, navColor)
 
+            vertSourceTxt = "G"
+            if  int(self._hsiSource) == 2 and self._gpsgsavailable == 0:
+                vertSourceTxt  = "V"
+
             self.qp.drawText(
                 rect,
                 Qt.AlignCenter | Qt.AlignVCenter,
-                "G" if self._gpsgsavailable else "V",
+                vertSourceTxt,
             )
 
             self.setPen(2, greyColor)
