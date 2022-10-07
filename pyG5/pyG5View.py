@@ -679,8 +679,8 @@ class pyG5HSIWidget(pyG5Widget):
             self.setPen(1, navColor)
 
             vertSourceTxt = "G"
-            if  int(self._hsiSource) == 2 and self._gpsgsavailable == 0:
-                vertSourceTxt  = "V"
+            if int(self._hsiSource) == 2 and self._gpsgsavailable == 0:
+                vertSourceTxt = "V"
 
             self.qp.drawText(
                 rect,
