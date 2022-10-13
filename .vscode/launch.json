@@ -1,0 +1,23 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "ViewTester",
+      "type": "python",
+      "request": "launch",
+      "module": "pyG5.pyG5ViewTester",
+      "justMyCode": true
+    },
+    {
+      "name": "App",
+      "type": "python",
+      "request": "launch",
+      "module": "pyG5.pyG5Main",
+      "args": ["-v"],
+      "justMyCode": true
+    }
+  ]
+}

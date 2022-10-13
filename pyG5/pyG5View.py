@@ -60,6 +60,8 @@ class pyG5DualStack(QWidget):
 
         self.setLayout(self.vlayout)
 
+        # self.setFixedSize(480,800)
+
 
 class pyG5Widget(QWidget):
     """Base class for the G5 wdiget view."""
@@ -79,6 +81,9 @@ class pyG5Widget(QWidget):
 
         """property name, default value"""
         propertyList = [
+            ("trims", 0),
+            ("flaps", 0),
+            ("carbheat", 0),
             ("gpsdmedist", 0),
             ("gpshsisens", 0),
             ("nav1type", 0),
@@ -156,6 +161,408 @@ class pyG5Widget(QWidget):
             except Exception as e:
                 self.logger.error("failed to set value {}: {}".format(value[5], e))
         self.repaint()
+
+
+secWidth = 800
+secHeight = 480
+
+
+class pyG5SecondaryWidget(pyG5Widget):
+    """Generate G5 wdiget view."""
+
+    def __init__(self, parent=None):
+        """g5Widget Constructor.
+
+        Args:
+            parent: Parent Widget
+
+        Returns:
+            self
+        """
+        pyG5Widget.__init__(self, parent)
+
+        self.setFixedSize(secWidth, secHeight)
+
+    def paintEvent(self, event):
+        """Paint the widget."""
+        self.qp = QPainter(self)
+
+        # Draw the background
+        self.setPen(1, Qt.black)
+        self.qp.setBrush(QBrush(Qt.black))
+        self.qp.drawRect(0, 0, secWidth, secHeight)
+
+        self.setPen(1, Qt.white)
+        self.qp.setBrush(QBrush(Qt.black))
+
+        # flaps settings
+        flapXBase = 620
+        flapYBase = 20
+        flapHeight = secHeight - 40
+        flapWidth = 130
+
+        self.setPen(1, Qt.white)
+        self.qp.setBrush(QBrush(Qt.white))
+        font = self.qp.font()
+        font.setPixelSize(30)
+        font.setBold(True)
+        self.qp.setFont(font)
+
+        # draw the title
+        self.qp.drawText(
+            QRectF(
+                flapXBase + 40,
+                flapYBase,
+                90,
+                40,
+            ),
+            Qt.AlignHCenter | Qt.AlignTop,
+            "FLAPS",
+        )
+
+        font.setPixelSize(20)
+        font.setBold(False)
+        self.qp.setFont(font)
+
+        # draw the flaps angle legend
+        for i in range(0, 4):
+            self.qp.drawText(
+                QRectF(
+                    flapXBase,
+                    flapYBase + 40 + int((flapHeight) * i / 4),
+                    40,
+                    40,
+                ),
+                Qt.AlignHCenter | Qt.AlignVCenter,
+                "{:02d}°".format(10 * i),
+            )
+
+        # draw the indicator rectangle
+        self.qp.setBrush(QBrush(Qt.black))
+        self.qp.drawRect(flapXBase + 90, flapYBase + 40, 40, flapHeight - 40)
+
+        # draw the indicator legend white
+        self.setPen(1, Qt.white)
+        self.qp.setBrush(QBrush(Qt.white))
+        rect = QRectF(
+            flapXBase + 50,
+            flapYBase + 40 + int((flapHeight - 40) / 3),
+            40,
+            flapHeight - 40 - +int((flapHeight - 40) / 3),
+        )
+        self.qp.drawRect(rect)
+        self.setPen(1, Qt.black)
+        self.qp.setBrush(QBrush(Qt.black))
+        self.qp.drawText(rect, Qt.AlignHCenter | Qt.AlignVCenter, "8\n5")
+
+        # draw the indicator legend cyan
+        self.setPen(1, Qt.cyan)
+        self.qp.setBrush(QBrush(Qt.cyan))
+        rect = QRectF(
+            flapXBase + 50, flapYBase + 40, 40, int((flapHeight - 40) / 3 + 20)
+        )
+        self.qp.drawRect(rect)
+        self.setPen(1, Qt.black)
+        self.qp.setBrush(QBrush(Qt.black))
+        self.qp.drawText(rect, Qt.AlignHCenter | Qt.AlignVCenter, "1\n1\n0")
+
+        self.setPen(1, Qt.white)
+        self.qp.setBrush(QBrush(Qt.white))
+
+        self.qp.drawPolygon(
+            QPolygonF(
+                [
+                    QPointF(
+                        flapXBase + flapWidth,
+                        flapYBase + 50 + self._flaps * int((flapHeight - 100) / 3),
+                    ),
+                    QPointF(
+                        flapXBase + flapWidth,
+                        flapYBase + 70 + self._flaps * int((flapHeight - 100) / 3),
+                    ),
+                    QPointF(
+                        flapXBase + flapWidth - 30,
+                        flapYBase + 70 + self._flaps * int((flapHeight - 100) / 3),
+                    ),
+                    QPointF(
+                        flapXBase + flapWidth - 40,
+                        flapYBase + 60 + self._flaps * int((flapHeight - 100) / 3),
+                    ),
+                    QPointF(
+                        flapXBase + flapWidth - 30,
+                        flapYBase + 50 + self._flaps * int((flapHeight - 100) / 3),
+                    ),
+                    QPointF(
+                        flapXBase + flapWidth,
+                        flapYBase + 50 + self._flaps * int((flapHeight - 100) / 3),
+                    ),
+                ]
+            )
+        )
+
+        # trim settings
+        trimXBase = 460
+        trimYBase = 20
+        trimHeight = secHeight - 40
+        trimWidth = 130
+
+        self.setPen(1, Qt.white)
+        self.qp.setBrush(QBrush(Qt.white))
+        font = self.qp.font()
+        font.setPixelSize(30)
+        font.setBold(True)
+        self.qp.setFont(font)
+
+        # draw the title
+        self.qp.drawText(
+            QRectF(
+                trimXBase + 40,
+                trimYBase,
+                90,
+                40,
+            ),
+            Qt.AlignHCenter | Qt.AlignTop,
+            "TRIM",
+        )
+
+        font.setPixelSize(20)
+        font.setBold(False)
+        self.qp.setFont(font)
+
+        # draw the flaps angle legend
+        self.qp.drawText(
+            QRectF(
+                trimXBase,
+                trimYBase + 40 + int((trimHeight) / 2 - 40),
+                80,
+                40,
+            ),
+            Qt.AlignHCenter | Qt.AlignVCenter,
+            "Take-off",
+        )
+
+        # draw the indicator rectangle
+        self.qp.setBrush(QBrush(Qt.black))
+        self.qp.drawRect(trimXBase + 90, trimYBase + 40, 40, trimHeight - 40)
+
+        self.setPen(1, Qt.white)
+        self.qp.setBrush(QBrush(Qt.white))
+
+        trimShift = self._trims * (trimHeight - 40)
+
+        self.qp.drawPolygon(
+            QPolygonF(
+                [
+                    QPointF(trimXBase + trimWidth, trimYBase + 50 + trimShift),
+                    QPointF(trimXBase + trimWidth, trimYBase + 70 + trimShift),
+                    QPointF(trimXBase + trimWidth - 30, trimYBase + 70 + trimShift),
+                    QPointF(trimXBase + trimWidth - 40, trimYBase + 60 + trimShift),
+                    QPointF(trimXBase + trimWidth - 30, trimYBase + 50 + trimShift),
+                    QPointF(trimXBase + trimWidth, trimYBase + 50 + trimShift),
+                ]
+            )
+        )
+
+        # sqawk code and status
+        xpdrXbase = 20
+        xpdrYbase = 20
+
+        xpdrwidth = 160
+        xpdrheight = 40
+
+        font = self.qp.font()
+        font.setPixelSize(xpdrheight - 6)
+        font.setBold(True)
+        self.qp.setFont(font)
+
+        # draw the indicator rectangle
+        self.setPen(1, Qt.white)
+        self.qp.setBrush(QBrush(Qt.white))
+        rect = QRectF(xpdrXbase, xpdrYbase, xpdrwidth, xpdrheight)
+        self.qp.drawRect(xpdrXbase, xpdrYbase, xpdrwidth, xpdrheight)
+
+        self.setPen(1, Qt.black)
+        self.qp.setBrush(QBrush(Qt.black))
+        self.qp.drawText(
+            rect,
+            Qt.AlignHCenter | Qt.AlignVCenter,
+            "XPDR",
+        )
+
+        self.setPen(2, Qt.white)
+        self.qp.setBrush(QBrush(Qt.black))
+        rect = QRectF(xpdrXbase + xpdrwidth, xpdrYbase, 420 - xpdrwidth, xpdrheight)
+        self.qp.drawRect(rect)
+
+        self.setPen(1, Qt.white)
+        self.qp.setBrush(QBrush(Qt.white))
+        self.qp.drawText(
+            rect,
+            Qt.AlignHCenter | Qt.AlignVCenter,
+            "5470 ALT",
+        )
+
+        # carb heat status
+        carbXbase = 20
+        carbYbase = xpdrYbase + xpdrheight + 20
+
+        carbwidth = 80
+        carbheight = 80
+
+        font.setPixelSize(20)
+        font.setBold(False)
+        self.qp.setFont(font)
+
+        rect = QRectF(carbXbase, carbYbase, carbwidth, 40)
+
+        self.qp.drawText(
+            rect,
+            Qt.AlignHCenter | Qt.AlignVCenter,
+            "CARB",
+        )
+
+        self.setPen(2, Qt.white)
+        if self._carbheat > 0.1:
+            self.qp.setBrush(QBrush(Qt.green))
+        else:
+            self.qp.setBrush(QBrush(Qt.black))
+
+        rect = QRectF(carbXbase, carbYbase + 40, carbwidth, carbheight)
+
+        self.qp.drawEllipse(rect)
+
+        # fuel pump status
+        fuelXbase = 20
+        fuelYbase = carbYbase + carbheight + 20
+
+        fuelwidth = 80
+        fuelheight = 80
+
+        font.setPixelSize(20)
+        font.setBold(False)
+        self.qp.setFont(font)
+
+        rect = QRectF(fuelXbase, fuelYbase, fuelwidth, 100)
+
+        self.qp.drawText(
+            rect,
+            Qt.AlignHCenter | Qt.AlignVCenter,
+            "FUEL\nPUMP",
+        )
+
+        self.setPen(2, Qt.white)
+        self.qp.setBrush(QBrush(Qt.green))
+
+        rect = QRectF(fuelXbase, fuelYbase + 80, fuelwidth, fuelheight)
+
+        self.qp.drawEllipse(rect)
+
+        # fuel feed settings
+
+        ffXBase = 120
+        ffYBase = carbYbase + 40
+
+        ffWdidth = 440 - ffXBase
+        ffHeight = 220
+
+        self.setPen(1, Qt.white)
+        self.qp.setBrush(QBrush(Qt.white))
+        rect = QRectF(ffXBase, carbYbase, ffWdidth, 20)
+        self.qp.drawText(
+            rect,
+            Qt.AlignHCenter | Qt.AlignVCenter,
+            "FUEL FEED",
+        )
+
+        self.setPen(1, Qt.white)
+        self.qp.setBrush(QBrush(Qt.black))
+
+        rect = QRectF(ffXBase, ffYBase, ffWdidth, ffHeight)
+        self.qp.drawRect(rect)
+
+        self.qp.drawText(
+            rect,
+            Qt.AlignHCenter | Qt.AlignTop,
+            "BOTH",
+        )
+        self.qp.drawText(
+            rect,
+            Qt.AlignHCenter | Qt.AlignBottom,
+            "OFF",
+        )
+
+        self.qp.drawText(
+            rect,
+            Qt.AlignLeft | Qt.AlignVCenter,
+            "LEFT",
+        )
+
+        self.qp.drawText(
+            rect,
+            Qt.AlignRight | Qt.AlignVCenter,
+            "RIGHT",
+        )
+
+        brect = QRectF(0, 0, 100, 100)
+
+        brect.moveCenter(rect.center())
+        self.qp.drawEllipse(brect)
+
+        self.setPen(1, Qt.white)
+        self.qp.setBrush(QBrush(Qt.white))
+        self.qp.drawPolygon(
+            QPolygonF(
+                [
+                    QPointF(rect.center().x() - 10, rect.center().y() + 50),
+                    QPointF(rect.center().x() + 10, rect.center().y() + 50),
+                    QPointF(rect.center().x() + 10, rect.center().y() - 50),
+                    QPointF(rect.center().x(), rect.center().y() - 70),
+                    QPointF(rect.center().x() - 10, rect.center().y() - 50),
+                ]
+            )
+        )
+
+        self.setPen(1, Qt.black)
+        self.qp.setBrush(QBrush(Qt.black))
+        brect = QRectF(0, 0, 10, 10)
+        brect.moveCenter(rect.center())
+        self.qp.drawEllipse(brect)
+
+        # advisory panel (low voltage)
+        advXBase = 20
+        advYBase = fuelYbase + fuelheight + 100
+
+        advWdidth = 420
+        advHeight = 100
+
+        advTable = [
+            {"text": "LOW\nVOLTS", "color": Qt.yellow},
+            {"text": "LOW\nFUEL", "color": Qt.red},
+        ]
+
+        self.setPen(1, QColor("#5d5b59"))
+        self.qp.setBrush(QBrush(Qt.black))
+
+        rect = QRectF(advXBase, advYBase, advWdidth, advHeight)
+        self.qp.drawRect(rect)
+
+        for i in range(0, 2):
+            for j in range(0, 4):
+                advrect = QRectF(
+                    advXBase + j * advWdidth / 4,
+                    advYBase + i * advHeight / 2,
+                    advWdidth / 4,
+                    advHeight / 2,
+                )
+                self.qp.drawRect(advrect)
+                if j + 4 * i < len(advTable):
+                    self.qp.drawText(
+                        advrect,
+                        Qt.AlignHCenter | Qt.AlignVCenter,
+                        advTable[4 * i + j]["text"],
+                    )
+
+        self.qp.end()
 
 
 class pyG5HSIWidget(pyG5Widget):

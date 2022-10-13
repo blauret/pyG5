@@ -21,7 +21,7 @@ from PyQt5.QtWidgets import (
     QScrollArea,
 )
 
-from pyG5.pyG5View import pyG5DualStack, g5Width, g5Height
+from pyG5.pyG5View import pyG5DualStack, g5Width, g5Height, pyG5SecondaryWidget
 
 sliderWdith = 300
 
@@ -102,12 +102,21 @@ if __name__ == "__main__":
     scrollArea.setObjectName("scrollArea")
     controlVLayout = QVBoxLayout()
     controlWidget.setLayout(controlVLayout)
-    hlayout.addWidget(scrollArea)
 
+    secView = pyG5SecondaryWidget()
+    vlayout = QVBoxLayout()
+    vlayout.addWidget(scrollArea)
+    vlayout.addWidget(secView)
+
+    hlayout.addLayout(vlayout)
     g5View = pyG5DualStack()
     hlayout.addWidget(g5View)
 
     controls = [
+        makeControlDict("flaps", 0, 4),
+        makeControlDict("trims", -1, 1),
+        makeControlDict("carbheat", 0, 1),
+        makeControlDict("fuelsel", -1, 1),
         makeControlDict("avionicson", 0, 1),
         makeControlDict("magHeading", 0, 360),
         makeControlDict("groundTrack", 0, 360),
@@ -143,6 +152,7 @@ if __name__ == "__main__":
         try:
             slider.valueChanged.connect(getattr(g5View.pyG5AI, control["name"]))
             slider.valueChanged.connect(getattr(g5View.pyG5HSI, control["name"]))
+            slider.valueChanged.connect(getattr(secView, control["name"]))
             print("Slider connected: {}".format(control["name"]))
         except Exception as inst:
             print("{} control not connected to view: {}".format(control["name"], inst))

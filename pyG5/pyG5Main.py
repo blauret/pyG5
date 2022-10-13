@@ -22,7 +22,7 @@ from PyQt5.QtWidgets import (
 )
 
 from pyG5.pyG5Network import pyG5NetWorkManager
-from pyG5.pyG5View import pyG5DualStack
+from pyG5.pyG5View import pyG5DualStack, pyG5SecondaryWidget
 
 
 class pyG5App(QApplication):
@@ -75,6 +75,10 @@ class pyG5App(QApplication):
             self.mainWindow.showFullScreen()
         else:
             self.mainWindow.show()
+
+        self.secondaryWindow = pyG5SecondWindow()
+
+        self.secondaryWindow.show()
 
     def argument_parser(self):
         """Initialize the arguments passed from the command line."""
@@ -132,6 +136,43 @@ class pyG5MainWindow(QMainWindow):
         self.pyG5DualStacked = pyG5DualStack()
 
         self.setCentralWidget(self.pyG5DualStacked)
+
+
+class pyG5SecondWindow(QMainWindow):
+    """pyG5App PyQt5 application.
+
+    Args:
+        sys.argv
+
+    Returns:
+        self
+    """
+
+    def __init__(self, parent=None):
+        """g5Widget Constructor.
+
+        Args:
+            parent: Parent Widget
+
+        Returns:
+            self
+        """
+        QMainWindow.__init__(self, parent)
+
+        self.setStyleSheet("background-color: black;")
+
+        target = "FreeSans"
+
+        if target in QFontDatabase().families():
+            print("set font")
+            font = QFont(target)
+            self.setFont(font)
+
+        self.setWindowTitle(__appName__)
+
+        self.cWidget = pyG5SecondaryWidget()
+
+        self.setCentralWidget(self.cWidget)
 
 
 if __name__ == "__main__":
