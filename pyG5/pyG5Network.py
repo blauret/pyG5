@@ -50,6 +50,46 @@ class pyG5NetWorkManager(QObject):
         self.datarefs = [
             # ( dataref, frequency, unit, description, num decimals to display in formatted output )
             (
+                "sim/cockpit2/fuel/fuel_tank_selector",
+                30,
+                "onoff",
+                "fuel selector",
+                0,
+                "_fuelSel",
+            ),
+            (
+                "sim/cockpit2/engine/actuators/carb_heat_ratio",
+                30,
+                "onoff",
+                "fuel pump on",
+                0,
+                "_carbheat",
+            ),
+            (
+                "sim/cockpit/engine/fuel_pump_on",
+                30,
+                "onoff",
+                "fuel pump on",
+                0,
+                "_fuelpump",
+            ),
+            (
+                "sim/flightmodel/controls/elv_trim",
+                30,
+                "mode",
+                "Transponder mode",
+                0,
+                "_trims",
+            ),
+            (
+                "sim/flightmodel/controls/flaprat",
+                30,
+                "mode",
+                "Transponder mode",
+                0,
+                "_flaps",
+            ),
+            (
                 "sim/cockpit/radios/transponder_mode",
                 10,
                 "mode",

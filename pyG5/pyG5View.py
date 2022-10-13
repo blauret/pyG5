@@ -81,10 +81,12 @@ class pyG5Widget(QWidget):
 
         """property name, default value"""
         propertyList = [
+            ("fuelSel", 4),
             ("xpdrMode", 0),
             ("xpdrCode", 0000),
             ("trims", 0),
             ("flaps", 0),
+            ("fuelpump", 0),
             ("carbheat", 0),
             ("gpsdmedist", 0),
             ("gpshsisens", 0),
@@ -276,27 +278,27 @@ class pyG5SecondaryWidget(pyG5Widget):
                 [
                     QPointF(
                         flapXBase + flapWidth,
-                        flapYBase + 50 + self._flaps * int((flapHeight - 100) / 3),
+                        flapYBase + 50 + self._flaps * int((flapHeight - 100)),
                     ),
                     QPointF(
                         flapXBase + flapWidth,
-                        flapYBase + 70 + self._flaps * int((flapHeight - 100) / 3),
+                        flapYBase + 70 + self._flaps * int((flapHeight - 100)),
                     ),
                     QPointF(
                         flapXBase + flapWidth - 30,
-                        flapYBase + 70 + self._flaps * int((flapHeight - 100) / 3),
+                        flapYBase + 70 + self._flaps * int((flapHeight - 100)),
                     ),
                     QPointF(
                         flapXBase + flapWidth - 40,
-                        flapYBase + 60 + self._flaps * int((flapHeight - 100) / 3),
+                        flapYBase + 60 + self._flaps * int((flapHeight - 100)),
                     ),
                     QPointF(
                         flapXBase + flapWidth - 30,
-                        flapYBase + 50 + self._flaps * int((flapHeight - 100) / 3),
+                        flapYBase + 50 + self._flaps * int((flapHeight - 100)),
                     ),
                     QPointF(
                         flapXBase + flapWidth,
-                        flapYBase + 50 + self._flaps * int((flapHeight - 100) / 3),
+                        flapYBase + 50 + self._flaps * int((flapHeight - 100)),
                     ),
                 ]
             )
@@ -350,17 +352,17 @@ class pyG5SecondaryWidget(pyG5Widget):
         self.setPen(1, Qt.white)
         self.qp.setBrush(QBrush(Qt.white))
 
-        trimShift = self._trims * (trimHeight - 40)
+        trimShift = (trimHeight - 60) * (self._trims/2 + 0.5)
 
         self.qp.drawPolygon(
             QPolygonF(
                 [
-                    QPointF(trimXBase + trimWidth, trimYBase + 50 + trimShift),
-                    QPointF(trimXBase + trimWidth, trimYBase + 70 + trimShift),
-                    QPointF(trimXBase + trimWidth - 30, trimYBase + 70 + trimShift),
-                    QPointF(trimXBase + trimWidth - 40, trimYBase + 60 + trimShift),
-                    QPointF(trimXBase + trimWidth - 30, trimYBase + 50 + trimShift),
-                    QPointF(trimXBase + trimWidth, trimYBase + 50 + trimShift),
+                    QPointF(trimXBase + trimWidth, trimYBase + 40 + trimShift),
+                    QPointF(trimXBase + trimWidth, trimYBase + 60 + trimShift),
+                    QPointF(trimXBase + trimWidth - 30, trimYBase + 60 + trimShift),
+                    QPointF(trimXBase + trimWidth - 40, trimYBase + 50 + trimShift),
+                    QPointF(trimXBase + trimWidth - 30, trimYBase + 40 + trimShift),
+                    QPointF(trimXBase + trimWidth, trimYBase + 40 + trimShift),
                 ]
             )
         )
@@ -470,6 +472,11 @@ class pyG5SecondaryWidget(pyG5Widget):
 
         rect = QRectF(fuelXbase, fuelYbase + 80, fuelwidth, fuelheight)
 
+        if self._fuelpump > 0:
+            self.qp.setBrush(QBrush(Qt.green))
+        else:
+            self.qp.setBrush(QBrush(Qt.black))
+
         self.qp.drawEllipse(rect)
 
         # fuel feed settings
@@ -518,9 +525,19 @@ class pyG5SecondaryWidget(pyG5Widget):
             "RIGHT",
         )
 
-        brect = QRectF(0, 0, 100, 100)
+        self.qp.translate(rect.center())
 
-        brect.moveCenter(rect.center())
+        if self._fuelSel == 0:
+            self.qp.rotate(180)
+        elif self._fuelSel == 1:
+            self.qp.rotate(-90)
+        elif self._fuelSel == 4:
+            self.qp.rotate(90)
+        else :
+            self.qp.rotate(0)
+
+
+        brect = QRectF(-50, -50, 100, 100)
         self.qp.drawEllipse(brect)
 
         self.setPen(1, Qt.white)
@@ -528,20 +545,21 @@ class pyG5SecondaryWidget(pyG5Widget):
         self.qp.drawPolygon(
             QPolygonF(
                 [
-                    QPointF(rect.center().x() - 10, rect.center().y() + 50),
-                    QPointF(rect.center().x() + 10, rect.center().y() + 50),
-                    QPointF(rect.center().x() + 10, rect.center().y() - 50),
-                    QPointF(rect.center().x(), rect.center().y() - 70),
-                    QPointF(rect.center().x() - 10, rect.center().y() - 50),
+                    QPointF( - 10,  + 50),
+                    QPointF( + 10,  + 50),
+                    QPointF( + 10,  - 50),
+                    QPointF( 0,  - 70),
+                    QPointF( - 10,  - 50),
                 ]
             )
         )
 
         self.setPen(1, Qt.black)
         self.qp.setBrush(QBrush(Qt.black))
-        brect = QRectF(0, 0, 10, 10)
-        brect.moveCenter(rect.center())
+        brect = QRectF(-5, -5, 10, 10)
         self.qp.drawEllipse(brect)
+
+        self.qp.resetTransform()
 
         # advisory panel (low voltage)
         advXBase = 20
@@ -553,6 +571,8 @@ class pyG5SecondaryWidget(pyG5Widget):
         advTable = [
             {"text": "LOW\nVOLTS", "color": Qt.yellow},
             {"text": "LOW\nFUEL", "color": Qt.red},
+            {"text": "OIL\nPRESS", "color": Qt.red},
+            {"text": "LOW\nVACUUM", "color": Qt.yellow},
         ]
 
         self.setPen(1, QColor("#5d5b59"))
