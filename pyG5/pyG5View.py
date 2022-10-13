@@ -81,6 +81,8 @@ class pyG5Widget(QWidget):
 
         """property name, default value"""
         propertyList = [
+            ("xpdrMode", 0),
+            ("xpdrCode", 0000),
             ("trims", 0),
             ("flaps", 0),
             ("carbheat", 0),
@@ -396,10 +398,23 @@ class pyG5SecondaryWidget(pyG5Widget):
 
         self.setPen(1, Qt.white)
         self.qp.setBrush(QBrush(Qt.white))
+
+        if int(self._xpdrMode) == 0:
+            xpdrMode = 'OFF'
+        elif int(self._xpdrMode) == 1:
+            xpdrMode = 'STDBY'
+        elif int(self._xpdrMode) == 2:
+            xpdrMode = 'ON'
+        elif int(self._xpdrMode) == 3:
+            xpdrMode = 'ALT'
+        elif int(self._xpdrMode) == 4:
+            xpdrMode = 'TEST'
+
+
         self.qp.drawText(
             rect,
             Qt.AlignHCenter | Qt.AlignVCenter,
-            "5470 ALT",
+            "{:04d} {}".format(int(self._xpdrCode), xpdrMode),
         )
 
         # carb heat status

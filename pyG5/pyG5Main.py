@@ -78,6 +78,10 @@ class pyG5App(QApplication):
 
         self.secondaryWindow = pyG5SecondWindow()
 
+        self.networkManager.drefUpdate.connect(
+            self.secondaryWindow.cWidget.drefHandler
+        )
+
         self.secondaryWindow.show()
 
     def argument_parser(self):

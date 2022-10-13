@@ -50,6 +50,22 @@ class pyG5NetWorkManager(QObject):
         self.datarefs = [
             # ( dataref, frequency, unit, description, num decimals to display in formatted output )
             (
+                "sim/cockpit/radios/transponder_mode",
+                10,
+                "mode",
+                "Transponder mode",
+                0,
+                "_xpdrMode",
+            ),
+            (
+                "sim/cockpit/radios/transponder_code",
+                10,
+                "code",
+                "Transponder code",
+                0,
+                "_xpdrCode",
+            ),
+            (
                 "sim/cockpit/radios/gps_dme_dist_m",
                 1,
                 "Gs",
