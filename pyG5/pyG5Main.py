@@ -89,6 +89,7 @@ class pyG5App(QApplication):
         self.secondaryWindow.show()
 
     def painTimerCB(self):
+        """Trigger update of all the widgets."""
         self.mainWindow.pyG5DualStacked.pyG5HSI.update()
         self.mainWindow.pyG5DualStacked.update()
         self.secondaryWindow.cWidget.update()
