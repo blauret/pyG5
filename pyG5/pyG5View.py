@@ -164,7 +164,6 @@ class pyG5Widget(QWidget):
                 setattr(self, value[3], value[0])
             except Exception as e:
                 self.logger.error("failed to set value {}: {}".format(value[5], e))
-        self.repaint()
 
 
 secWidth = 800
@@ -531,8 +530,12 @@ class pyG5SecondaryWidget(pyG5Widget):
             self.qp.rotate(180)
         elif self._fuelSel == 1:
             self.qp.rotate(-90)
-        elif self._fuelSel == 4:
+        elif self._fuelSel == 2:
+            self.qp.rotate(45)
+        elif self._fuelSel == 3:
             self.qp.rotate(90)
+        elif self._fuelSel == 4:
+            self.qp.rotate(0)
         else :
             self.qp.rotate(0)
 

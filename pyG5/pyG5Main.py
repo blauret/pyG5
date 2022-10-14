@@ -13,7 +13,7 @@ import platform
 import sys
 
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QFont, QFontDatabase
 from PyQt5.QtWidgets import (
     QApplication,
@@ -59,6 +59,10 @@ class pyG5App(QApplication):
 
         self.networkManager = pyG5NetWorkManager()
 
+        self.paintTimer = QTimer()
+        self.paintTimer.timeout.connect(self.painTimerCB)  # Let the interpreter run each 500 ms.
+        self.paintTimer.start(25)  # You may change this if you wish.
+
         # The QWidget widget is the base class of all user interface objects in PyQt4.
         self.mainWindow = pyG5MainWindow()
 
@@ -83,6 +87,12 @@ class pyG5App(QApplication):
         )
 
         self.secondaryWindow.show()
+
+    def painTimerCB(self):
+        self.mainWindow.pyG5DualStacked.pyG5HSI.update()
+        self.mainWindow.pyG5DualStacked.update()
+        self.secondaryWindow.cWidget.update()
+
 
     def argument_parser(self):
         """Initialize the arguments passed from the command line."""
