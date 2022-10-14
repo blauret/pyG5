@@ -81,6 +81,11 @@ class pyG5Widget(QWidget):
 
         """property name, default value"""
         propertyList = [
+            ("fuelPress", 0),
+            ("lowVolts", 0),
+            ("oilPres", 0),
+            ("lowVacuum", 0),
+            ("lowFuel", 0),
             ("fuelSel", 4),
             ("xpdrMode", 0),
             ("xpdrCode", 0000),
@@ -373,50 +378,52 @@ class pyG5SecondaryWidget(pyG5Widget):
         xpdrwidth = 160
         xpdrheight = 40
 
-        font = self.qp.font()
-        font.setPixelSize(xpdrheight - 6)
-        font.setBold(True)
-        self.qp.setFont(font)
+        if self._avionicson:
 
-        # draw the indicator rectangle
-        self.setPen(1, Qt.white)
-        self.qp.setBrush(QBrush(Qt.white))
-        rect = QRectF(xpdrXbase, xpdrYbase, xpdrwidth, xpdrheight)
-        self.qp.drawRect(xpdrXbase, xpdrYbase, xpdrwidth, xpdrheight)
+            font = self.qp.font()
+            font.setPixelSize(xpdrheight - 6)
+            font.setBold(True)
+            self.qp.setFont(font)
 
-        self.setPen(1, Qt.black)
-        self.qp.setBrush(QBrush(Qt.black))
-        self.qp.drawText(
-            rect,
-            Qt.AlignHCenter | Qt.AlignVCenter,
-            "XPDR",
-        )
+            # draw the indicator rectangle
+            self.setPen(1, Qt.white)
+            self.qp.setBrush(QBrush(Qt.white))
+            rect = QRectF(xpdrXbase, xpdrYbase, xpdrwidth, xpdrheight)
+            self.qp.drawRect(xpdrXbase, xpdrYbase, xpdrwidth, xpdrheight)
 
-        self.setPen(2, Qt.white)
-        self.qp.setBrush(QBrush(Qt.black))
-        rect = QRectF(xpdrXbase + xpdrwidth, xpdrYbase, 420 - xpdrwidth, xpdrheight)
-        self.qp.drawRect(rect)
+            self.setPen(1, Qt.black)
+            self.qp.setBrush(QBrush(Qt.black))
+            self.qp.drawText(
+                rect,
+                Qt.AlignHCenter | Qt.AlignVCenter,
+                "XPDR",
+            )
 
-        self.setPen(1, Qt.white)
-        self.qp.setBrush(QBrush(Qt.white))
+            self.setPen(2, Qt.white)
+            self.qp.setBrush(QBrush(Qt.black))
+            rect = QRectF(xpdrXbase + xpdrwidth, xpdrYbase, 420 - xpdrwidth, xpdrheight)
+            self.qp.drawRect(rect)
 
-        if int(self._xpdrMode) == 0:
-            xpdrMode = 'OFF'
-        elif int(self._xpdrMode) == 1:
-            xpdrMode = 'STDBY'
-        elif int(self._xpdrMode) == 2:
-            xpdrMode = 'ON'
-        elif int(self._xpdrMode) == 3:
-            xpdrMode = 'ALT'
-        elif int(self._xpdrMode) == 4:
-            xpdrMode = 'TEST'
+            self.setPen(1, Qt.white)
+            self.qp.setBrush(QBrush(Qt.white))
+
+            if int(self._xpdrMode) == 0:
+                xpdrMode = 'OFF'
+            elif int(self._xpdrMode) == 1:
+                xpdrMode = 'STDBY'
+            elif int(self._xpdrMode) == 2:
+                xpdrMode = 'ON'
+            elif int(self._xpdrMode) == 3:
+                xpdrMode = 'ALT'
+            elif int(self._xpdrMode) == 4:
+                xpdrMode = 'TEST'
 
 
-        self.qp.drawText(
-            rect,
-            Qt.AlignHCenter | Qt.AlignVCenter,
-            "{:04d} {}".format(int(self._xpdrCode), xpdrMode),
-        )
+            self.qp.drawText(
+                rect,
+                Qt.AlignHCenter | Qt.AlignVCenter,
+                "{:04d} {}".format(int(self._xpdrCode), xpdrMode),
+            )
 
         # carb heat status
         carbXbase = 20
@@ -438,7 +445,7 @@ class pyG5SecondaryWidget(pyG5Widget):
         )
 
         self.setPen(2, Qt.white)
-        if self._carbheat > 0.1:
+        if self._carbheat > 0.1 and self._avionicson :
             self.qp.setBrush(QBrush(Qt.green))
         else:
             self.qp.setBrush(QBrush(Qt.black))
@@ -471,7 +478,7 @@ class pyG5SecondaryWidget(pyG5Widget):
 
         rect = QRectF(fuelXbase, fuelYbase + 80, fuelwidth, fuelheight)
 
-        if self._fuelpump > 0:
+        if self._fuelpump > 0 and self._avionicson :
             self.qp.setBrush(QBrush(Qt.green))
         else:
             self.qp.setBrush(QBrush(Qt.black))
@@ -572,13 +579,16 @@ class pyG5SecondaryWidget(pyG5Widget):
         advHeight = 100
 
         advTable = [
-            {"text": "LOW\nVOLTS", "color": Qt.yellow},
-            {"text": "LOW\nFUEL", "color": Qt.red},
-            {"text": "OIL\nPRESS", "color": Qt.red},
-            {"text": "LOW\nVACUUM", "color": Qt.yellow},
+            {"text": "LOW\nVOLTS", "color": Qt.red, "name": "_lowVolts"},
+            {"text": "LOW\nFUEL", "color": Qt.red, "name": "_lowFuel"},
+            {"text": "OIL\nPRESS", "color": Qt.red, "name": "_oilPres"},
+            {"text": "LOW\nVACUUM", "color": Qt.yellow, "name": "_lowVacuum"},
+            {"text": "FUEL\nPRESS", "color": Qt.yellow, "name": "_fuelPress"},
         ]
 
-        self.setPen(1, QColor("#5d5b59"))
+
+        grayColor=  QColor("#5d5b59")
+        self.setPen(1, grayColor)
         self.qp.setBrush(QBrush(Qt.black))
 
         rect = QRectF(advXBase, advYBase, advWdidth, advHeight)
@@ -593,12 +603,18 @@ class pyG5SecondaryWidget(pyG5Widget):
                     advHeight / 2,
                 )
                 self.qp.drawRect(advrect)
+
                 if j + 4 * i < len(advTable):
+                    if getattr(self, advTable[4 * i + j]['name']) == 1:
+                        self.setPen(1,  advTable[4 * i + j]['color'])
+
                     self.qp.drawText(
                         advrect,
                         Qt.AlignHCenter | Qt.AlignVCenter,
                         advTable[4 * i + j]["text"],
                     )
+
+                    self.setPen(1, grayColor)
 
         self.qp.end()
 

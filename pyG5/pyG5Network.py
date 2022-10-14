@@ -50,6 +50,46 @@ class pyG5NetWorkManager(QObject):
         self.datarefs = [
             # ( dataref, frequency, unit, description, num decimals to display in formatted output )
             (
+                "sim/cockpit/warnings/annunciators/fuel_quantity",
+                1,
+                "onoff",
+                "fuel selector",
+                0,
+                "_lowFuel",
+            ),
+            (
+                "sim/cockpit/warnings/annunciators/oil_pressure_low[0]",
+                1,
+                "onoff",
+                "fuel selector",
+                0,
+                "_oilPres",
+            ),
+            (
+                "sim/cockpit/warnings/annunciators/fuel_pressure_low[0]",
+                1,
+                "onoff",
+                "fuel selector",
+                0,
+                "_fuelPress",
+            ),
+            (
+                "sim/cockpit/warnings/annunciators/low_vacuum",
+                1,
+                "onoff",
+                "fuel selector",
+                0,
+                "_lowVacuum",
+            ),
+            (
+                "sim/cockpit/warnings/annunciators/low_voltage",
+                1,
+                "onoff",
+                "fuel selector",
+                0,
+                "_lowVolts",
+            ),
+            (
                 "sim/cockpit2/fuel/fuel_tank_selector",
                 30,
                 "onoff",
@@ -58,7 +98,7 @@ class pyG5NetWorkManager(QObject):
                 "_fuelSel",
             ),
             (
-                "sim/cockpit2/engine/actuators/carb_heat_ratio",
+                "sim/cockpit2/engine/actuators/carb_heat_ratio[0]",
                 30,
                 "onoff",
                 "fuel pump on",
@@ -66,7 +106,7 @@ class pyG5NetWorkManager(QObject):
                 "_carbheat",
             ),
             (
-                "sim/cockpit/engine/fuel_pump_on",
+                "sim/cockpit/engine/fuel_pump_on[0]",
                 10,
                 "onoff",
                 "fuel pump on",
@@ -599,7 +639,7 @@ class pyG5NetWorkManager(QObject):
                         self.datarefs[idx][0],
                         self.datarefs[idx][5],
                     )
-                    # if idx <= 1:
+                    # if idx == 0:
                     #     print("idx: {}, value: {}".format(idx, value))
                 self.drefUpdate.emit(retvalues)
 
