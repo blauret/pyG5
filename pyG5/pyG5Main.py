@@ -60,7 +60,9 @@ class pyG5App(QApplication):
         self.networkManager = pyG5NetWorkManager()
 
         self.paintTimer = QTimer()
-        self.paintTimer.timeout.connect(self.painTimerCB)  # Let the interpreter run each 500 ms.
+        self.paintTimer.timeout.connect(
+            self.painTimerCB
+        )  # Let the interpreter run each 500 ms.
         self.paintTimer.start(25)  # You may change this if you wish.
 
         # The QWidget widget is the base class of all user interface objects in PyQt4.
@@ -82,9 +84,7 @@ class pyG5App(QApplication):
 
         self.secondaryWindow = pyG5SecondWindow()
 
-        self.networkManager.drefUpdate.connect(
-            self.secondaryWindow.cWidget.drefHandler
-        )
+        self.networkManager.drefUpdate.connect(self.secondaryWindow.cWidget.drefHandler)
 
         self.secondaryWindow.show()
 
@@ -92,7 +92,6 @@ class pyG5App(QApplication):
         self.mainWindow.pyG5DualStacked.pyG5HSI.update()
         self.mainWindow.pyG5DualStacked.update()
         self.secondaryWindow.cWidget.update()
-
 
     def argument_parser(self):
         """Initialize the arguments passed from the command line."""

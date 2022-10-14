@@ -127,7 +127,8 @@ class pyG5Widget(QWidget):
             ("kiasDelta", 0),
             ("ktas", 0),
             ("altitude", 0),
-            ("alt_setting", 29.92),
+            ("alt_setting", 1013),
+            ("alt_setting_metric", 1),
             ("vh_ind_fpm", 0),
             ("turnRate", 0),
             ("slip", 0),
@@ -356,7 +357,7 @@ class pyG5SecondaryWidget(pyG5Widget):
         self.setPen(1, Qt.white)
         self.qp.setBrush(QBrush(Qt.white))
 
-        trimShift = (trimHeight - 60) * (self._trims/2 + 0.5)
+        trimShift = (trimHeight - 60) * (self._trims / 2 + 0.5)
 
         self.qp.drawPolygon(
             QPolygonF(
@@ -408,16 +409,15 @@ class pyG5SecondaryWidget(pyG5Widget):
             self.qp.setBrush(QBrush(Qt.white))
 
             if int(self._xpdrMode) == 0:
-                xpdrMode = 'OFF'
+                xpdrMode = "OFF"
             elif int(self._xpdrMode) == 1:
-                xpdrMode = 'STDBY'
+                xpdrMode = "STDBY"
             elif int(self._xpdrMode) == 2:
-                xpdrMode = 'ON'
+                xpdrMode = "ON"
             elif int(self._xpdrMode) == 3:
-                xpdrMode = 'ALT'
+                xpdrMode = "ALT"
             elif int(self._xpdrMode) == 4:
-                xpdrMode = 'TEST'
-
+                xpdrMode = "TEST"
 
             self.qp.drawText(
                 rect,
@@ -445,7 +445,7 @@ class pyG5SecondaryWidget(pyG5Widget):
         )
 
         self.setPen(2, Qt.white)
-        if self._carbheat > 0.1 and self._avionicson :
+        if self._carbheat > 0.1 and self._avionicson:
             self.qp.setBrush(QBrush(Qt.green))
         else:
             self.qp.setBrush(QBrush(Qt.black))
@@ -478,7 +478,7 @@ class pyG5SecondaryWidget(pyG5Widget):
 
         rect = QRectF(fuelXbase, fuelYbase + 80, fuelwidth, fuelheight)
 
-        if self._fuelpump > 0 and self._avionicson :
+        if self._fuelpump > 0 and self._avionicson:
             self.qp.setBrush(QBrush(Qt.green))
         else:
             self.qp.setBrush(QBrush(Qt.black))
@@ -543,9 +543,8 @@ class pyG5SecondaryWidget(pyG5Widget):
             self.qp.rotate(90)
         elif self._fuelSel == 4:
             self.qp.rotate(0)
-        else :
+        else:
             self.qp.rotate(0)
-
 
         brect = QRectF(-50, -50, 100, 100)
         self.qp.drawEllipse(brect)
@@ -555,11 +554,11 @@ class pyG5SecondaryWidget(pyG5Widget):
         self.qp.drawPolygon(
             QPolygonF(
                 [
-                    QPointF( - 10,  + 50),
-                    QPointF( + 10,  + 50),
-                    QPointF( + 10,  - 50),
-                    QPointF( 0,  - 70),
-                    QPointF( - 10,  - 50),
+                    QPointF(-10, +50),
+                    QPointF(+10, +50),
+                    QPointF(+10, -50),
+                    QPointF(0, -70),
+                    QPointF(-10, -50),
                 ]
             )
         )
@@ -586,8 +585,7 @@ class pyG5SecondaryWidget(pyG5Widget):
             {"text": "FUEL\nPRESS", "color": Qt.yellow, "name": "_fuelPress"},
         ]
 
-
-        grayColor=  QColor("#5d5b59")
+        grayColor = QColor("#5d5b59")
         self.setPen(1, grayColor)
         self.qp.setBrush(QBrush(Qt.black))
 
@@ -605,8 +603,8 @@ class pyG5SecondaryWidget(pyG5Widget):
                 self.qp.drawRect(advrect)
 
                 if j + 4 * i < len(advTable):
-                    if getattr(self, advTable[4 * i + j]['name']) == 1:
-                        self.setPen(1,  advTable[4 * i + j]['color'])
+                    if getattr(self, advTable[4 * i + j]["name"]) == 1:
+                        self.setPen(1, advTable[4 * i + j]["color"])
 
                     self.qp.drawText(
                         advrect,
@@ -1901,11 +1899,19 @@ class pyG5AIWidget(pyG5Widget):
             altSettingHeight,
         )
         self.qp.drawRect(rect)
-        self.qp.drawText(
-            rect,
-            Qt.AlignHCenter | Qt.AlignVCenter,
-            "{:02.02f}".format(self._alt_setting),
-        )
+
+        if self._alt_setting_metric:
+            self.qp.drawText(
+                rect,
+                Qt.AlignHCenter | Qt.AlignVCenter,
+                "{:04.00f}".format(33.863886 * self._alt_setting),
+            )
+        else:
+            self.qp.drawText(
+                rect,
+                Qt.AlignHCenter | Qt.AlignVCenter,
+                "{:02.02f}".format(self._alt_setting),
+            )
 
         #################################################
         # Turn coordinator

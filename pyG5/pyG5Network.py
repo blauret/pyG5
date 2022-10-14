@@ -466,6 +466,14 @@ class pyG5NetWorkManager(QObject):
                 "_alt_setting",
             ),
             (
+                "sim/physics/metric_press",
+                1,
+                "feet",
+                "Altimeter setting",
+                0,
+                "_alt_setting_metric",
+            ),
+            (
                 "sim/cockpit2/gauges/indicators/slip_deg",
                 30,
                 "°",
