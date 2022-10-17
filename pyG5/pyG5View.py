@@ -771,13 +771,13 @@ class pyG5HSIWidget(pyG5Widget):
         self.qp.drawPolygon(
             QPolygonF(
                 [
-                    QPointF(-9, rotatinghsiCircleRadius - 1),
-                    QPointF(+9, rotatinghsiCircleRadius - 1),
-                    QPointF(+9, rotatinghsiCircleRadius + 6),
+                    QPointF(-15, rotatinghsiCircleRadius - 3),
+                    QPointF(+15, rotatinghsiCircleRadius - 3),
+                    QPointF(+15, rotatinghsiCircleRadius + 6),
                     QPointF(+6, rotatinghsiCircleRadius + 6),
                     QPointF(0, rotatinghsiCircleRadius + 1),
                     QPointF(-6, rotatinghsiCircleRadius + 6),
-                    QPointF(-9, rotatinghsiCircleRadius + 6),
+                    QPointF(-15, rotatinghsiCircleRadius + 6),
                 ]
             )
         )
