@@ -220,10 +220,10 @@ class pyG5SecondaryWidget(pyG5Widget):
         # draw the title
         self.qp.drawText(
             QRectF(
-                flapXBase + 40,
+                flapXBase,
                 flapYBase,
-                90,
-                60,
+                flapWidth,
+                40,
             ),
             Qt.AlignRight | Qt.AlignTop,
             "FLAPS",
