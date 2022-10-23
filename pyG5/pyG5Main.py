@@ -9,18 +9,18 @@ __appName__ = "pyG5"
 
 import argparse
 import logging
-import platform
 import sys
 
 
-from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtGui import QFont, QFontDatabase
+from PyQt5.QtCore import Qt, QTimer, QCoreApplication, QSettings, pyqtSlot, QByteArray
+from PyQt5.QtGui import QFont, QFontDatabase, QCloseEvent
 from PyQt5.QtWidgets import (
     QApplication,
     QMainWindow,
     QMenu,
 )
 
+from PyQt5.Qt import QEvent
 from pyG5.pyG5Network import pyG5NetWorkManager
 from pyG5.pyG5View import pyG5DualStack, pyG5SecondaryWidget
 
@@ -45,6 +45,16 @@ class pyG5App(QApplication):
             self
         """
         QApplication.__init__(self, sys.argv)
+
+        QCoreApplication.setOrganizationName("pyG5")
+        QCoreApplication.setOrganizationDomain("pyg5.org")
+        QCoreApplication.setApplicationName("pyG5")
+        self.settings = QSettings(
+            QSettings.IniFormat,
+            QSettings.UserScope,
+            QCoreApplication.organizationDomain(),
+            "pyG5",
+        )
 
         # parse the command line arguments
         self.argument_parser()
@@ -76,15 +86,17 @@ class pyG5App(QApplication):
         )
 
         # Show window
-        # full screen for the RPI
-        if platform.machine() in "armv7l":
-            self.mainWindow.showFullScreen()
-        else:
-            self.mainWindow.show()
+        self.mainWindow.loadSettings()
+        self.mainWindow.setWindowFlags(self.mainWindow.windowFlags() | Qt.FramelessWindowHint)
+
+        self.mainWindow.show()
 
         self.secondaryWindow = pyG5SecondWindow()
+        self.secondaryWindow.setWindowFlags(self.secondaryWindow.windowFlags() | Qt.FramelessWindowHint)
 
         self.networkManager.drefUpdate.connect(self.secondaryWindow.cWidget.drefHandler)
+
+        self.secondaryWindow.loadSettings()
 
         self.secondaryWindow.show()
 
@@ -126,6 +138,8 @@ class pyG5MainWindow(QMainWindow):
         """
         QMainWindow.__init__(self, parent)
 
+        self.settings = QCoreApplication.instance().settings
+
         self.setStyleSheet("background-color: black;")
 
         target = "FreeSans"
@@ -151,6 +165,50 @@ class pyG5MainWindow(QMainWindow):
 
         self.setCentralWidget(self.pyG5DualStacked)
 
+    def changeEvent(self, event):
+        """Window change event overload.
+
+        Args:
+            event
+
+        Returns:
+            self
+        """
+        if QEvent.ActivationChange == event.type():
+            self.settings.setValue("mainWindow/windowState", self.saveState())
+        elif QEvent.WindowStateChange == event.type():
+            if Qt.WindowMinimized != self.windowState():
+                try:
+                    self.restoreState(self.settings.value("mainWindow/windowState"))
+                except Exception as inst:
+                    logging.warning("State restore: {}".format(inst))
+                    pass
+
+    def loadSettings(self):
+        """Load settings helper."""
+        try:
+            self.restoreGeometry(
+                self.settings.value("mainWindow/geometry", QByteArray())
+            )
+            self.restoreState(self.settings.value("mainWindow/windowState"))
+        except Exception as inst:
+            logging.warning("State restore: {}".format(inst))
+            pass
+
+    @pyqtSlot(QCloseEvent)
+    def closeEvent(self, event):
+        """Close event overload.
+
+        Args:
+            event
+
+        Returns:
+            self
+        """
+        self.settings.setValue("mainWindow/geometry", self.saveGeometry())
+        self.settings.setValue("mainWindow/windowState", self.saveState())
+        QMainWindow.closeEvent(self, event)
+
 
 class pyG5SecondWindow(QMainWindow):
     """pyG5App PyQt5 application.
@@ -173,6 +231,8 @@ class pyG5SecondWindow(QMainWindow):
         """
         QMainWindow.__init__(self, parent)
 
+        self.settings = QCoreApplication.instance().settings
+
         self.setStyleSheet("background-color: black;")
 
         target = "FreeSans"
@@ -187,6 +247,50 @@ class pyG5SecondWindow(QMainWindow):
         self.cWidget = pyG5SecondaryWidget()
 
         self.setCentralWidget(self.cWidget)
+
+    def changeEvent(self, event):
+        """Window change event overload.
+
+        Args:
+            event
+
+        Returns:
+            self
+        """
+        if QEvent.ActivationChange == event.type():
+            self.settings.setValue("secWindow/secWindowState", self.saveState())
+        elif QEvent.WindowStateChange == event.type():
+            if Qt.WindowMinimized != self.windowState():
+                try:
+                    self.restoreState(self.settings.value("secWindow/secWindowState"))
+                except Exception as inst:
+                    logging.warning("State restore: {}".format(inst))
+                    pass
+
+    def loadSettings(self):
+        """Load settings helper."""
+        try:
+            self.restoreGeometry(
+                self.settings.value("secWindow/geometry", QByteArray())
+            )
+            self.restoreState(self.settings.value("secWindow/secWindowState"))
+        except Exception as inst:
+            logging.warning("State restore: {}".format(inst))
+            pass
+
+    @pyqtSlot(QCloseEvent)
+    def closeEvent(self, event):
+        """Close event overload.
+
+        Args:
+            event
+
+        Returns:
+            self
+        """
+        self.settings.setValue("secWindow/geometry", self.saveGeometry())
+        self.settings.setValue("secWindow/secWindowState", self.saveState())
+        QMainWindow.closeEvent(self, event)
 
 
 if __name__ == "__main__":
