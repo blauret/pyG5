@@ -200,7 +200,9 @@ class pyG5SecondaryWidget(pyG5Widget):
         self.xpdrwidth = 160
         self.xpdrheight = 40
 
-        self.xpdrRect = QRectF(self.xpdrXbase, self.xpdrYbase, self.xpdrwidth, self.xpdrheight)
+        self.xpdrRect = QRectF(
+            self.xpdrXbase, self.xpdrYbase, self.xpdrwidth, self.xpdrheight
+        )
 
         self.xpdrKeyXbase = 20
         self.xpdrKeyYbase = self.xpdrYbase + self.xpdrheight
@@ -208,9 +210,81 @@ class pyG5SecondaryWidget(pyG5Widget):
         self.xpdrKeyWidth = 420
         self.xpdrKeyHeight = secHeight - (self.xpdrYbase + self.xpdrheight) - 20
 
-        self.xpdrkeyRect = QRectF(self.xpdrKeyXbase, self.xpdrKeyYbase, self.xpdrKeyWidth, self.xpdrKeyHeight)
+        self.xpdrkeyRect = QRectF(
+            self.xpdrKeyXbase, self.xpdrKeyYbase, self.xpdrKeyWidth, self.xpdrKeyHeight
+        )
 
+        self.keyArea = []
 
+        index = 0
+        for i in [1, 2, 3, 4]:
+            rect = QRectF(
+                self.xpdrKeyXbase + 26.125 + index * 95,
+                self.xpdrKeyYbase + 20,
+                82.5,
+                82.5,
+            )
+            self.keyArea.append([rect, i])
+            index += 1
+
+        index = 0
+        for i in [5, 6, 7, 0]:
+            rect = QRectF(
+                self.xpdrKeyXbase + 26.125 + index * 95,
+                self.xpdrKeyYbase + 20 + 95 + 20,
+                82.5,
+                82.5,
+            )
+            self.keyArea.append([rect, i])
+            index += 1
+
+        self.keyCtrlArea = []
+        self.keyCtrlArea.append(
+            [
+                QRectF(
+                    self.xpdrKeyXbase,
+                    self.xpdrKeyYbase + self.xpdrKeyHeight / 2 + 40,
+                    self.xpdrKeyWidth / 2,
+                    self.xpdrKeyHeight / 4 - 20,
+                ),
+                "OFF",
+            ]
+        )
+        self.keyCtrlArea.append(
+            [
+                QRectF(
+                    self.xpdrKeyXbase,
+                    self.xpdrKeyYbase + self.xpdrKeyHeight * 3 / 4 + 20,
+                    self.xpdrKeyWidth / 2,
+                    self.xpdrKeyHeight / 4 - 20,
+                ),
+                "ON",
+            ]
+        )
+
+        self.keyCtrlArea.append(
+            [
+                QRectF(
+                    self.xpdrKeyXbase + self.xpdrKeyWidth / 2,
+                    self.xpdrKeyYbase + self.xpdrKeyHeight / 2 + 40,
+                    self.xpdrKeyWidth / 2,
+                    self.xpdrKeyHeight / 4 - 20,
+                ),
+                "STBY",
+            ]
+        )
+
+        self.keyCtrlArea.append(
+            [
+                QRectF(
+                    self.xpdrKeyXbase + self.xpdrKeyWidth / 2,
+                    self.xpdrKeyYbase + self.xpdrKeyHeight * 3 / 4 + 20,
+                    self.xpdrKeyWidth / 2,
+                    self.xpdrKeyHeight / 4 - 20,
+                ),
+                "ALT",
+            ]
+        )
 
     def mousePressEvent(self, event):
         """Mouse Pressed event overload."""
@@ -220,7 +294,13 @@ class pyG5SecondaryWidget(pyG5Widget):
 
             else:
                 if self.xpdrkeyRect.contains(event.pos()):
-                    pass
+                    for key in self.keyArea:
+                        if key[0].contains(event.pos()):
+                            print(key[1])
+                    for key in self.keyCtrlArea:
+                        if key[0].contains(event.pos()):
+                            print(key[1])
+                            self.xpdrKeyboard = False
                 else:
                     self.xpdrKeyboard = False
 
@@ -429,7 +509,12 @@ class pyG5SecondaryWidget(pyG5Widget):
 
             self.setPen(2, Qt.white)
             self.qp.setBrush(QBrush(Qt.black))
-            rect = QRectF(self.xpdrXbase + self.xpdrwidth, self.xpdrYbase, 420 - self.xpdrwidth, self.xpdrheight)
+            rect = QRectF(
+                self.xpdrXbase + self.xpdrwidth,
+                self.xpdrYbase,
+                420 - self.xpdrwidth,
+                self.xpdrheight,
+            )
             self.qp.drawRect(rect)
 
             self.setPen(1, Qt.white)
@@ -458,63 +543,21 @@ class pyG5SecondaryWidget(pyG5Widget):
             self.qp.setBrush(QBrush(Qt.black))
             self.qp.drawRect(self.xpdrkeyRect)
 
-            index = 0
-            for i in [1, 2, 3, 4]:
-                
-                rect = QRectF(self.xpdrKeyXbase + 26.125 + index * 95, self.xpdrKeyYbase + 20, 82.5, 82.5)
-                self.qp.drawEllipse(rect)
+            for key in self.keyArea:
+                self.qp.drawEllipse(key[0])
                 self.qp.drawText(
-                    rect,
+                    key[0],
                     Qt.AlignCenter,
-                    "{:01d}".format(i),
+                    "{:01d}".format(key[1]),
                 )
-                index += 1
 
-            index =0
-            for i in [5, 6, 7, 0]:
-                
-                rect = QRectF(self.xpdrKeyXbase + 26.125 + index * 95, self.xpdrKeyYbase + 20 + 95 + 20, 82.5, 82.5)
-                self.qp.drawEllipse(rect)
+            for key in self.keyCtrlArea:
+                self.qp.drawRect(key[0])
                 self.qp.drawText(
-                    rect,
+                    key[0],
                     Qt.AlignCenter,
-                    "{:01d}".format(i),
+                    key[1],
                 )
-                index += 1
-
-            rect = QRectF(self.xpdrKeyXbase, self.xpdrKeyYbase + self.xpdrKeyHeight /2 + 40, self.xpdrKeyWidth /2, self.xpdrKeyHeight /4 - 20)
-            self.qp.drawRect(rect)
-            self.qp.drawText(
-                rect,
-                Qt.AlignCenter,
-                "OFF",
-            )
-            
-            rect = QRectF(self.xpdrKeyXbase, self.xpdrKeyYbase + self.xpdrKeyHeight * 3/4  + 20, self.xpdrKeyWidth /2, self.xpdrKeyHeight /4 - 20)
-            self.qp.drawRect(rect)
-            self.qp.drawText(
-                rect,
-                Qt.AlignCenter,
-                "ON",
-            )
-
-            rect = QRectF(self.xpdrKeyXbase + self.xpdrKeyWidth /2, self.xpdrKeyYbase + self.xpdrKeyHeight /2  + 40, self.xpdrKeyWidth /2, self.xpdrKeyHeight /4 - 20)
-            self.qp.drawRect(rect)
-            self.qp.drawText(
-                rect,
-                Qt.AlignCenter,
-                "STB",
-            )
-            
-            rect = QRectF(self.xpdrKeyXbase + self.xpdrKeyWidth /2, self.xpdrKeyYbase + self.xpdrKeyHeight * 3/4 + 20, self.xpdrKeyWidth /2, self.xpdrKeyHeight /4 - 20)
-            self.qp.drawRect(rect)
-            self.qp.drawText(
-                rect,
-                Qt.AlignCenter,
-                "ON",
-            )
-
-            
 
         else:
             # carb heat status
