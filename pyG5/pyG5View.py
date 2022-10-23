@@ -223,9 +223,9 @@ class pyG5SecondaryWidget(pyG5Widget):
                 flapXBase + 40,
                 flapYBase,
                 90,
-                40,
+                60,
             ),
-            Qt.AlignHCenter | Qt.AlignTop,
+            Qt.AlignRight | Qt.AlignTop,
             "FLAPS",
         )
 
@@ -330,7 +330,7 @@ class pyG5SecondaryWidget(pyG5Widget):
                 90,
                 40,
             ),
-            Qt.AlignHCenter | Qt.AlignTop,
+            Qt.AlignRight | Qt.AlignTop,
             "TRIM",
         )
 
