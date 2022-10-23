@@ -190,7 +190,41 @@ class pyG5SecondaryWidget(pyG5Widget):
         """
         pyG5Widget.__init__(self, parent)
 
+        self.xpdrKeyboard = False
+
         self.setFixedSize(secWidth, secHeight)
+
+        self.xpdrXbase = 20
+        self.xpdrYbase = 20
+
+        self.xpdrwidth = 160
+        self.xpdrheight = 40
+
+        self.xpdrRect = QRectF(self.xpdrXbase, self.xpdrYbase, self.xpdrwidth, self.xpdrheight)
+
+        self.xpdrKeyXbase = 20
+        self.xpdrKeyYbase = self.xpdrYbase + self.xpdrheight
+
+        self.xpdrKeyWidth = 420
+        self.xpdrKeyHeight = secHeight - (self.xpdrYbase + self.xpdrheight) - 20
+
+        self.xpdrkeyRect = QRectF(self.xpdrKeyXbase, self.xpdrKeyYbase, self.xpdrKeyWidth, self.xpdrKeyHeight)
+
+
+
+    def mousePressEvent(self, event):
+        """Mouse Pressed event overload."""
+        if self._avionicson:
+            if self.xpdrRect.contains(event.pos()):
+                self.xpdrKeyboard = not self.xpdrKeyboard
+
+            else:
+                if self.xpdrkeyRect.contains(event.pos()):
+                    pass
+                else:
+                    self.xpdrKeyboard = False
+
+        self.update()
 
     def paintEvent(self, event):
         """Paint the widget."""
@@ -373,36 +407,29 @@ class pyG5SecondaryWidget(pyG5Widget):
         )
 
         # sqawk code and status
-        xpdrXbase = 20
-        xpdrYbase = 20
-
-        xpdrwidth = 160
-        xpdrheight = 40
-
         if self._avionicson:
 
             font = self.qp.font()
-            font.setPixelSize(xpdrheight - 6)
+            font.setPixelSize(self.xpdrheight - 6)
             font.setBold(True)
             self.qp.setFont(font)
 
             # draw the indicator rectangle
-            self.setPen(1, Qt.white)
+            self.setPen(2, Qt.white)
             self.qp.setBrush(QBrush(Qt.white))
-            rect = QRectF(xpdrXbase, xpdrYbase, xpdrwidth, xpdrheight)
-            self.qp.drawRect(xpdrXbase, xpdrYbase, xpdrwidth, xpdrheight)
+            self.qp.drawRect(self.xpdrRect)
 
             self.setPen(1, Qt.black)
             self.qp.setBrush(QBrush(Qt.black))
             self.qp.drawText(
-                rect,
+                self.xpdrRect,
                 Qt.AlignHCenter | Qt.AlignVCenter,
                 "XPDR",
             )
 
             self.setPen(2, Qt.white)
             self.qp.setBrush(QBrush(Qt.black))
-            rect = QRectF(xpdrXbase + xpdrwidth, xpdrYbase, 420 - xpdrwidth, xpdrheight)
+            rect = QRectF(self.xpdrXbase + self.xpdrwidth, self.xpdrYbase, 420 - self.xpdrwidth, self.xpdrheight)
             self.qp.drawRect(rect)
 
             self.setPen(1, Qt.white)
@@ -425,194 +452,259 @@ class pyG5SecondaryWidget(pyG5Widget):
                 "{:04d} {}".format(int(self._xpdrCode), xpdrMode),
             )
 
-        # carb heat status
-        carbXbase = 20
-        carbYbase = xpdrYbase + xpdrheight + 20
+        if self.xpdrKeyboard:
 
-        carbwidth = 80
-        carbheight = 80
-
-        font.setPixelSize(20)
-        font.setBold(False)
-        self.qp.setFont(font)
-
-        rect = QRectF(carbXbase, carbYbase, carbwidth, 40)
-
-        self.qp.drawText(
-            rect,
-            Qt.AlignHCenter | Qt.AlignVCenter,
-            "CARB",
-        )
-
-        self.setPen(2, Qt.white)
-        if self._carbheat > 0.1 and self._avionicson:
-            self.qp.setBrush(QBrush(Qt.green))
-        else:
+            self.setPen(2, Qt.white)
             self.qp.setBrush(QBrush(Qt.black))
+            self.qp.drawRect(self.xpdrkeyRect)
 
-        rect = QRectF(carbXbase, carbYbase + 40, carbwidth, carbheight)
-
-        self.qp.drawEllipse(rect)
-
-        # fuel pump status
-        fuelXbase = 20
-        fuelYbase = carbYbase + carbheight + 20
-
-        fuelwidth = 80
-        fuelheight = 80
-
-        font.setPixelSize(20)
-        font.setBold(False)
-        self.qp.setFont(font)
-
-        rect = QRectF(fuelXbase, fuelYbase, fuelwidth, 100)
-
-        self.qp.drawText(
-            rect,
-            Qt.AlignHCenter | Qt.AlignVCenter,
-            "FUEL\nPUMP",
-        )
-
-        self.setPen(2, Qt.white)
-        self.qp.setBrush(QBrush(Qt.green))
-
-        rect = QRectF(fuelXbase, fuelYbase + 80, fuelwidth, fuelheight)
-
-        if self._fuelpump > 0 and self._avionicson:
-            self.qp.setBrush(QBrush(Qt.green))
-        else:
-            self.qp.setBrush(QBrush(Qt.black))
-
-        self.qp.drawEllipse(rect)
-
-        # fuel feed settings
-
-        ffXBase = 120
-        ffYBase = carbYbase + 40
-
-        ffWdidth = 440 - ffXBase
-        ffHeight = 220
-
-        self.setPen(1, Qt.white)
-        self.qp.setBrush(QBrush(Qt.white))
-        rect = QRectF(ffXBase, carbYbase, ffWdidth, 20)
-        self.qp.drawText(
-            rect,
-            Qt.AlignHCenter | Qt.AlignVCenter,
-            "FUEL FEED",
-        )
-
-        self.setPen(1, Qt.white)
-        self.qp.setBrush(QBrush(Qt.black))
-
-        rect = QRectF(ffXBase, ffYBase, ffWdidth, ffHeight)
-        self.qp.drawRect(rect)
-
-        self.qp.drawText(
-            rect,
-            Qt.AlignHCenter | Qt.AlignTop,
-            "BOTH",
-        )
-        self.qp.drawText(
-            rect,
-            Qt.AlignHCenter | Qt.AlignBottom,
-            "OFF",
-        )
-
-        self.qp.drawText(
-            rect,
-            Qt.AlignLeft | Qt.AlignVCenter,
-            "LEFT",
-        )
-
-        self.qp.drawText(
-            rect,
-            Qt.AlignRight | Qt.AlignVCenter,
-            "RIGHT",
-        )
-
-        self.qp.translate(rect.center())
-
-        if self._fuelSel == 0:
-            self.qp.rotate(180)
-        elif self._fuelSel == 1:
-            self.qp.rotate(-90)
-        elif self._fuelSel == 2:
-            self.qp.rotate(45)
-        elif self._fuelSel == 3:
-            self.qp.rotate(90)
-        elif self._fuelSel == 4:
-            self.qp.rotate(0)
-        else:
-            self.qp.rotate(0)
-
-        brect = QRectF(-50, -50, 100, 100)
-        self.qp.drawEllipse(brect)
-
-        self.setPen(1, Qt.white)
-        self.qp.setBrush(QBrush(Qt.white))
-        self.qp.drawPolygon(
-            QPolygonF(
-                [
-                    QPointF(-10, +50),
-                    QPointF(+10, +50),
-                    QPointF(+10, -50),
-                    QPointF(0, -70),
-                    QPointF(-10, -50),
-                ]
-            )
-        )
-
-        self.setPen(1, Qt.black)
-        self.qp.setBrush(QBrush(Qt.black))
-        brect = QRectF(-5, -5, 10, 10)
-        self.qp.drawEllipse(brect)
-
-        self.qp.resetTransform()
-
-        # advisory panel (low voltage)
-        advXBase = 20
-        advYBase = fuelYbase + fuelheight + 100
-
-        advWdidth = 420
-        advHeight = 100
-
-        advTable = [
-            {"text": "LOW\nVOLTS", "color": Qt.red, "name": "_lowVolts"},
-            {"text": "LOW\nFUEL", "color": Qt.red, "name": "_lowFuel"},
-            {"text": "OIL\nPRESS", "color": Qt.red, "name": "_oilPres"},
-            {"text": "LOW\nVACUUM", "color": Qt.yellow, "name": "_lowVacuum"},
-            {"text": "FUEL\nPRESS", "color": Qt.yellow, "name": "_fuelPress"},
-        ]
-
-        grayColor = QColor("#5d5b59")
-        self.setPen(1, grayColor)
-        self.qp.setBrush(QBrush(Qt.black))
-
-        rect = QRectF(advXBase, advYBase, advWdidth, advHeight)
-        self.qp.drawRect(rect)
-
-        for i in range(0, 2):
-            for j in range(0, 4):
-                advrect = QRectF(
-                    advXBase + j * advWdidth / 4,
-                    advYBase + i * advHeight / 2,
-                    advWdidth / 4,
-                    advHeight / 2,
+            index = 0
+            for i in [1, 2, 3, 4]:
+                
+                rect = QRectF(self.xpdrKeyXbase + 26.125 + index * 95, self.xpdrKeyYbase + 20, 82.5, 82.5)
+                self.qp.drawEllipse(rect)
+                self.qp.drawText(
+                    rect,
+                    Qt.AlignCenter,
+                    "{:01d}".format(i),
                 )
-                self.qp.drawRect(advrect)
+                index += 1
 
-                if j + 4 * i < len(advTable):
-                    if getattr(self, advTable[4 * i + j]["name"]) == 1:
-                        self.setPen(1, advTable[4 * i + j]["color"])
+            index =0
+            for i in [5, 6, 7, 0]:
+                
+                rect = QRectF(self.xpdrKeyXbase + 26.125 + index * 95, self.xpdrKeyYbase + 20 + 95 + 20, 82.5, 82.5)
+                self.qp.drawEllipse(rect)
+                self.qp.drawText(
+                    rect,
+                    Qt.AlignCenter,
+                    "{:01d}".format(i),
+                )
+                index += 1
 
-                    self.qp.drawText(
-                        advrect,
-                        Qt.AlignHCenter | Qt.AlignVCenter,
-                        advTable[4 * i + j]["text"],
+            rect = QRectF(self.xpdrKeyXbase, self.xpdrKeyYbase + self.xpdrKeyHeight /2 + 40, self.xpdrKeyWidth /2, self.xpdrKeyHeight /4 - 20)
+            self.qp.drawRect(rect)
+            self.qp.drawText(
+                rect,
+                Qt.AlignCenter,
+                "OFF",
+            )
+            
+            rect = QRectF(self.xpdrKeyXbase, self.xpdrKeyYbase + self.xpdrKeyHeight * 3/4  + 20, self.xpdrKeyWidth /2, self.xpdrKeyHeight /4 - 20)
+            self.qp.drawRect(rect)
+            self.qp.drawText(
+                rect,
+                Qt.AlignCenter,
+                "ON",
+            )
+
+            rect = QRectF(self.xpdrKeyXbase + self.xpdrKeyWidth /2, self.xpdrKeyYbase + self.xpdrKeyHeight /2  + 40, self.xpdrKeyWidth /2, self.xpdrKeyHeight /4 - 20)
+            self.qp.drawRect(rect)
+            self.qp.drawText(
+                rect,
+                Qt.AlignCenter,
+                "STB",
+            )
+            
+            rect = QRectF(self.xpdrKeyXbase + self.xpdrKeyWidth /2, self.xpdrKeyYbase + self.xpdrKeyHeight * 3/4 + 20, self.xpdrKeyWidth /2, self.xpdrKeyHeight /4 - 20)
+            self.qp.drawRect(rect)
+            self.qp.drawText(
+                rect,
+                Qt.AlignCenter,
+                "ON",
+            )
+
+            
+
+        else:
+            # carb heat status
+            carbXbase = 20
+            carbYbase = self.xpdrYbase + self.xpdrheight + 20
+
+            carbwidth = 80
+            carbheight = 80
+
+            font.setPixelSize(20)
+            font.setBold(False)
+            self.qp.setFont(font)
+
+            rect = QRectF(carbXbase, carbYbase, carbwidth, 40)
+
+            self.qp.drawText(
+                rect,
+                Qt.AlignHCenter | Qt.AlignVCenter,
+                "CARB",
+            )
+
+            self.setPen(2, Qt.white)
+            if self._carbheat > 0.1 and self._avionicson:
+                self.qp.setBrush(QBrush(Qt.green))
+            else:
+                self.qp.setBrush(QBrush(Qt.black))
+
+            rect = QRectF(carbXbase, carbYbase + 40, carbwidth, carbheight)
+
+            self.qp.drawEllipse(rect)
+
+            # fuel pump status
+            fuelXbase = 20
+            fuelYbase = carbYbase + carbheight + 20
+
+            fuelwidth = 80
+            fuelheight = 80
+
+            font.setPixelSize(20)
+            font.setBold(False)
+            self.qp.setFont(font)
+
+            rect = QRectF(fuelXbase, fuelYbase, fuelwidth, 100)
+
+            self.qp.drawText(
+                rect,
+                Qt.AlignHCenter | Qt.AlignVCenter,
+                "FUEL\nPUMP",
+            )
+
+            self.setPen(2, Qt.white)
+            self.qp.setBrush(QBrush(Qt.green))
+
+            rect = QRectF(fuelXbase, fuelYbase + 80, fuelwidth, fuelheight)
+
+            if self._fuelpump > 0 and self._avionicson:
+                self.qp.setBrush(QBrush(Qt.green))
+            else:
+                self.qp.setBrush(QBrush(Qt.black))
+
+            self.qp.drawEllipse(rect)
+
+            # fuel feed settings
+
+            ffXBase = 120
+            ffYBase = carbYbase + 40
+
+            ffWdidth = 440 - ffXBase
+            ffHeight = 220
+
+            self.setPen(1, Qt.white)
+            self.qp.setBrush(QBrush(Qt.white))
+            rect = QRectF(ffXBase, carbYbase, ffWdidth, 20)
+            self.qp.drawText(
+                rect,
+                Qt.AlignHCenter | Qt.AlignVCenter,
+                "FUEL FEED",
+            )
+
+            self.setPen(1, Qt.white)
+            self.qp.setBrush(QBrush(Qt.black))
+
+            rect = QRectF(ffXBase, ffYBase, ffWdidth, ffHeight)
+            self.qp.drawRect(rect)
+
+            self.qp.drawText(
+                rect,
+                Qt.AlignHCenter | Qt.AlignTop,
+                "BOTH",
+            )
+            self.qp.drawText(
+                rect,
+                Qt.AlignHCenter | Qt.AlignBottom,
+                "OFF",
+            )
+
+            self.qp.drawText(
+                rect,
+                Qt.AlignLeft | Qt.AlignVCenter,
+                "LEFT",
+            )
+
+            self.qp.drawText(
+                rect,
+                Qt.AlignRight | Qt.AlignVCenter,
+                "RIGHT",
+            )
+
+            self.qp.translate(rect.center())
+
+            if self._fuelSel == 0:
+                self.qp.rotate(180)
+            elif self._fuelSel == 1:
+                self.qp.rotate(-90)
+            elif self._fuelSel == 2:
+                self.qp.rotate(45)
+            elif self._fuelSel == 3:
+                self.qp.rotate(90)
+            elif self._fuelSel == 4:
+                self.qp.rotate(0)
+            else:
+                self.qp.rotate(0)
+
+            brect = QRectF(-50, -50, 100, 100)
+            self.qp.drawEllipse(brect)
+
+            self.setPen(1, Qt.white)
+            self.qp.setBrush(QBrush(Qt.white))
+            self.qp.drawPolygon(
+                QPolygonF(
+                    [
+                        QPointF(-10, +50),
+                        QPointF(+10, +50),
+                        QPointF(+10, -50),
+                        QPointF(0, -70),
+                        QPointF(-10, -50),
+                    ]
+                )
+            )
+
+            self.setPen(1, Qt.black)
+            self.qp.setBrush(QBrush(Qt.black))
+            brect = QRectF(-5, -5, 10, 10)
+            self.qp.drawEllipse(brect)
+
+            self.qp.resetTransform()
+
+            # advisory panel (low voltage)
+            advXBase = 20
+            advYBase = fuelYbase + fuelheight + 100
+
+            advWdidth = 420
+            advHeight = 100
+
+            advTable = [
+                {"text": "LOW\nVOLTS", "color": Qt.red, "name": "_lowVolts"},
+                {"text": "LOW\nFUEL", "color": Qt.red, "name": "_lowFuel"},
+                {"text": "OIL\nPRESS", "color": Qt.red, "name": "_oilPres"},
+                {"text": "LOW\nVACUUM", "color": Qt.yellow, "name": "_lowVacuum"},
+                {"text": "FUEL\nPRESS", "color": Qt.yellow, "name": "_fuelPress"},
+            ]
+
+            grayColor = QColor("#5d5b59")
+            self.setPen(1, grayColor)
+            self.qp.setBrush(QBrush(Qt.black))
+
+            rect = QRectF(advXBase, advYBase, advWdidth, advHeight)
+            self.qp.drawRect(rect)
+
+            for i in range(0, 2):
+                for j in range(0, 4):
+                    advrect = QRectF(
+                        advXBase + j * advWdidth / 4,
+                        advYBase + i * advHeight / 2,
+                        advWdidth / 4,
+                        advHeight / 2,
                     )
+                    self.qp.drawRect(advrect)
 
-                    self.setPen(1, grayColor)
+                    if j + 4 * i < len(advTable):
+                        if getattr(self, advTable[4 * i + j]["name"]) == 1:
+                            self.setPen(1, advTable[4 * i + j]["color"])
+
+                        self.qp.drawText(
+                            advrect,
+                            Qt.AlignHCenter | Qt.AlignVCenter,
+                            advTable[4 * i + j]["text"],
+                        )
+
+                        self.setPen(1, grayColor)
 
         self.qp.end()
 
