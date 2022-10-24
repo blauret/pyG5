@@ -10,14 +10,23 @@ __appName__ = "pyG5"
 import argparse
 import logging
 import sys
+import platform
 
 
-from PyQt5.QtCore import Qt, QTimer, QCoreApplication, QSettings, pyqtSlot, QByteArray
+from PyQt5.QtCore import (
+    Qt,
+    QTimer,
+    QCoreApplication,
+    QSettings,
+    pyqtSlot,
+    QByteArray,
+    pyqtSignal,
+)
 from PyQt5.QtGui import QFont, QFontDatabase, QCloseEvent
 from PyQt5.QtWidgets import (
     QApplication,
     QMainWindow,
-    QMenu,
+    QAction,
 )
 
 from PyQt5.Qt import QEvent
@@ -87,22 +96,29 @@ class pyG5App(QApplication):
 
         # Show window
         self.mainWindow.loadSettings()
-        self.mainWindow.setWindowFlags(
-            self.mainWindow.windowFlags() | Qt.FramelessWindowHint
-        )
+
+        if platform.machine() in "armv7l":
+
+            self.mainWindow.setWindowFlags(
+                self.mainWindow.windowFlags() | Qt.FramelessWindowHint
+            )
 
         self.mainWindow.show()
 
         self.secondaryWindow = pyG5SecondWindow()
-        self.secondaryWindow.setWindowFlags(
-            self.secondaryWindow.windowFlags() | Qt.FramelessWindowHint
-        )
+        if platform.machine() in "armv7l":
+            self.secondaryWindow.setWindowFlags(
+                self.secondaryWindow.windowFlags() | Qt.FramelessWindowHint
+            )
 
         self.networkManager.drefUpdate.connect(self.secondaryWindow.cWidget.drefHandler)
 
         self.secondaryWindow.loadSettings()
 
         self.secondaryWindow.show()
+
+        self.mainWindow.closed.connect(self.secondaryWindow.close)
+        self.secondaryWindow.closed.connect(self.mainWindow.close)
 
     def painTimerCB(self):
         """Trigger update of all the widgets."""
@@ -131,6 +147,8 @@ class pyG5MainWindow(QMainWindow):
         self
     """
 
+    closed = pyqtSignal()
+
     def __init__(self, parent=None):
         """g5Widget Constructor.
 
@@ -154,16 +172,10 @@ class pyG5MainWindow(QMainWindow):
             self.setFont(font)
 
         self.setWindowTitle(__appName__)
-
-        self.file_menu = QMenu("&File", self)
-        self.file_menu.addAction("&Quit", self.close, Qt.CTRL + Qt.Key_W)
-        self.file_menu.setStyleSheet("color : white;background: transparent;")
-
-        menuBar = self.menuBar()
-        menuBar.addMenu(self.file_menu)
-        menuBar.setStyleSheet(
-            """QMenuBar::item { color : white; background: transparent; }"""
-        )
+        action = QAction("&Quit", self)
+        action.setShortcut(Qt.CTRL + Qt.Key_W)
+        action.triggered.connect(self.close)
+        self.addAction(action)
 
         self.pyG5DualStacked = pyG5DualStack()
 
@@ -211,6 +223,8 @@ class pyG5MainWindow(QMainWindow):
         """
         self.settings.setValue("mainWindow/geometry", self.saveGeometry())
         self.settings.setValue("mainWindow/windowState", self.saveState())
+        event.accept()
+        self.closed.emit()
         QMainWindow.closeEvent(self, event)
 
 
@@ -223,6 +237,8 @@ class pyG5SecondWindow(QMainWindow):
     Returns:
         self
     """
+
+    closed = pyqtSignal()
 
     def __init__(self, parent=None):
         """g5Widget Constructor.
@@ -251,6 +267,11 @@ class pyG5SecondWindow(QMainWindow):
         self.cWidget = pyG5SecondaryWidget()
 
         self.setCentralWidget(self.cWidget)
+
+        action = QAction("&Quit", self)
+        action.setShortcut(Qt.CTRL + Qt.Key_W)
+        action.triggered.connect(self.close)
+        self.addAction(action)
 
     def changeEvent(self, event):
         """Window change event overload.
@@ -294,6 +315,8 @@ class pyG5SecondWindow(QMainWindow):
         """
         self.settings.setValue("secWindow/geometry", self.saveGeometry())
         self.settings.setValue("secWindow/secWindowState", self.saveState())
+        event.accept()
+        self.closed.emit()
         QMainWindow.closeEvent(self, event)
 
 
