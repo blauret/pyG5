@@ -138,7 +138,7 @@ class pyG5NetWorkManager(QObject):
             ),
             (
                 "sim/cockpit/radios/transponder_code",
-                10,
+                30,
                 "code",
                 "Transponder code",
                 0,
@@ -558,14 +558,13 @@ class pyG5NetWorkManager(QObject):
         self.udpSock.bind(QHostAddress.AnyIPv4, 0, QUdpSocket.ShareAddress)
 
     @pyqtSlot()
-    def write_data_reg(self, data, path):
+    def write_data_ref(self, path, data):
         """Idle timer expired. Trigger reconnection process."""
         cmd = b"DREF\x00"  # DREF command
-        message = struct.pack("<5sfs", cmd, data, path, 0)
-
-        message += "\\s" * (509 - len(message))
-        self.logger.info("Set datatefs: {}".format(message))
-        # self.udpSock.writeDatagram(message, self.xpHost, self.xpPort)
+        message = struct.pack("<5sf", cmd, data)
+        message += bytes(path, "utf-8") + b"\x00"
+        message += " ".encode("utf-8") * (509 - len(message))
+        self.udpSock.writeDatagram(message, self.xpHost, self.xpPort)
 
     @pyqtSlot()
     def reconnect(self):

@@ -80,7 +80,7 @@ if __name__ == "__main__":
 
     # Set window size.
     w.resize(sliderWdith + g5Width, g5Height)
-
+    w.move(0, 0)
     # Set window title
     w.setWindowTitle("Garmin G5")
     file_menu = QMenu("&File", w)

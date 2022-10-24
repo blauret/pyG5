@@ -9,7 +9,7 @@ import logging
 from math import cos, radians, sin, sqrt
 from functools import wraps
 
-from PyQt5.QtCore import QLine, QPoint, QPointF, QRectF, Qt, pyqtSlot
+from PyQt5.QtCore import QLine, QPoint, QPointF, QRectF, Qt, pyqtSlot, pyqtSignal
 from PyQt5.QtGui import (
     QBrush,
     QPainter,
@@ -88,7 +88,7 @@ class pyG5Widget(QWidget):
             ("lowFuel", 0),
             ("fuelSel", 4),
             ("xpdrMode", 0),
-            ("xpdrCode", 0000),
+            ("xpdrCode", 5470),
             ("trims", 0),
             ("flaps", 0),
             ("fuelpump", 0),
@@ -179,6 +179,8 @@ secHeight = 480
 class pyG5SecondaryWidget(pyG5Widget):
     """Generate G5 wdiget view."""
 
+    xpdrCodeSignal = pyqtSignal(int)
+
     def __init__(self, parent=None):
         """g5Widget Constructor.
 
@@ -213,6 +215,8 @@ class pyG5SecondaryWidget(pyG5Widget):
         self.xpdrkeyRect = QRectF(
             self.xpdrKeyXbase, self.xpdrKeyYbase, self.xpdrKeyWidth, self.xpdrKeyHeight
         )
+
+        self.xpdrPos = 3
 
         self.keyArea = []
 
@@ -296,7 +300,26 @@ class pyG5SecondaryWidget(pyG5Widget):
                 if self.xpdrkeyRect.contains(event.pos()):
                     for key in self.keyArea:
                         if key[0].contains(event.pos()):
-                            print(key[1])
+
+                            # the input is a BCD value received as integer.
+                            # First step is to turn it into a real integer
+                            codestr = "{:04d}".format(int(self._xpdrCode))
+                            code = 0
+                            for idx, c in enumerate(codestr):
+                                code |= int(c) << (4 * (3 - idx))
+
+                            # code is the integer value of the string
+                            # now apply on code the new number
+                            code = code & ((0xF << (4 * self.xpdrPos)) ^ 0xFFFF)
+                            code = code | (key[1] << (4 * self.xpdrPos))
+
+                            # shift the position we update
+                            self.xpdrPos = (self.xpdrPos - 1) % 4
+
+                            # emit the new code value
+                            self._xpdrCode = int("{:04x}".format(code))
+                            self.xpdrCodeSignal.emit(self._xpdrCode)
+
                     for key in self.keyCtrlArea:
                         if key[0].contains(event.pos()):
                             print(key[1])
@@ -304,6 +327,8 @@ class pyG5SecondaryWidget(pyG5Widget):
                 else:
                     self.xpdrKeyboard = False
 
+            if not self.xpdrKeyboard:
+                self.xpdrPos = 3
         self.update()
 
     def paintEvent(self, event):

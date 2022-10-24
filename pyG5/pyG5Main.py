@@ -111,7 +111,11 @@ class pyG5App(QApplication):
                 self.secondaryWindow.windowFlags() | Qt.FramelessWindowHint
             )
 
+        # connect the value coming from the simulator
         self.networkManager.drefUpdate.connect(self.secondaryWindow.cWidget.drefHandler)
+
+        # connect the value to update to the simulator
+        self.secondaryWindow.cWidget.xpdrCodeSignal.connect(self.send_transponder_code)
 
         self.secondaryWindow.loadSettings()
 
@@ -119,6 +123,10 @@ class pyG5App(QApplication):
 
         self.mainWindow.closed.connect(self.secondaryWindow.close)
         self.secondaryWindow.closed.connect(self.mainWindow.close)
+
+    def send_transponder_code(self, code):
+        """Trigger the xpdr transmission to xplane."""
+        self.networkManager.write_data_ref("sim/cockpit/radios/transponder_code", code)
 
     def painTimerCB(self):
         """Trigger update of all the widgets."""
