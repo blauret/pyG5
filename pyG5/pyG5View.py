@@ -98,7 +98,7 @@ class pyG5Widget(QWidget):
             ("nav1type", 0),
             ("nav2type", 0),
             ("gpstype", 0),
-            ("avionicson", 0),
+            ("avionicson", 1),
             ("hsiSource", 0),
             ("nav1fromto", 0),
             ("nav2fromto", 0),
@@ -180,6 +180,7 @@ class pyG5SecondaryWidget(pyG5Widget):
     """Generate G5 wdiget view."""
 
     xpdrCodeSignal = pyqtSignal(int)
+    xpdrModeSignal = pyqtSignal(int)
 
     def __init__(self, parent=None):
         """g5Widget Constructor.
@@ -252,6 +253,7 @@ class pyG5SecondaryWidget(pyG5Widget):
                     self.xpdrKeyHeight / 4 - 20,
                 ),
                 "OFF",
+                0,
             ]
         )
         self.keyCtrlArea.append(
@@ -263,6 +265,7 @@ class pyG5SecondaryWidget(pyG5Widget):
                     self.xpdrKeyHeight / 4 - 20,
                 ),
                 "ON",
+                2,
             ]
         )
 
@@ -275,6 +278,7 @@ class pyG5SecondaryWidget(pyG5Widget):
                     self.xpdrKeyHeight / 4 - 20,
                 ),
                 "STBY",
+                1,
             ]
         )
 
@@ -287,6 +291,7 @@ class pyG5SecondaryWidget(pyG5Widget):
                     self.xpdrKeyHeight / 4 - 20,
                 ),
                 "ALT",
+                3,
             ]
         )
 
@@ -322,7 +327,8 @@ class pyG5SecondaryWidget(pyG5Widget):
 
                     for key in self.keyCtrlArea:
                         if key[0].contains(event.pos()):
-                            print(key[1])
+                            self.xpdrMode(key[2])
+                            self.xpdrModeSignal.emit(key[2])
                             self.xpdrKeyboard = False
                 else:
                     self.xpdrKeyboard = False

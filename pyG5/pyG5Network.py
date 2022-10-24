@@ -130,7 +130,7 @@ class pyG5NetWorkManager(QObject):
             ),
             (
                 "sim/cockpit/radios/transponder_mode",
-                10,
+                5,
                 "mode",
                 "Transponder mode",
                 0,
@@ -138,7 +138,7 @@ class pyG5NetWorkManager(QObject):
             ),
             (
                 "sim/cockpit/radios/transponder_code",
-                30,
+                5,
                 "code",
                 "Transponder code",
                 0,
