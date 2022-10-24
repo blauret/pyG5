@@ -32,7 +32,6 @@ class pyG5NetWorkManager(QObject):
         self
     """
 
-    xpInstance = pyqtSignal(QHostAddress, int)
     drefUpdate = pyqtSignal(dict)
 
     def __init__(self, parent=None):
@@ -559,6 +558,16 @@ class pyG5NetWorkManager(QObject):
         self.udpSock.bind(QHostAddress.AnyIPv4, 0, QUdpSocket.ShareAddress)
 
     @pyqtSlot()
+    def write_data_reg(self, data, path):
+        """Idle timer expired. Trigger reconnection process."""
+        cmd = b"DREF\x00"  # DREF command
+        message = struct.pack("<5sfs", cmd, data, path, 0)
+
+        message += "\\s" * (509 - len(message))
+        self.logger.info("Set datatefs: {}".format(message))
+        # self.udpSock.writeDatagram(message, self.xpHost, self.xpPort)
+
+    @pyqtSlot()
     def reconnect(self):
         """Idle timer expired. Trigger reconnection process."""
         self.logger.info("Connection Timeout expired")
@@ -576,6 +585,9 @@ class pyG5NetWorkManager(QObject):
         """Slot connecting triggering the connection to the XPlane."""
         self.listener.xpInstance.disconnect(self.xplaneConnect)
         self.listener.deleteLater()
+
+        self.xpHost = addr
+        self.xpPort = port
 
         self.logger.info("Request datatefs")
         # initiate connection
