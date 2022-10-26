@@ -97,16 +97,19 @@ class pyG5App(QApplication):
         # Show window
         self.mainWindow.loadSettings()
 
-        self.mainWindow.setWindowFlags(
-            self.mainWindow.windowFlags() | Qt.FramelessWindowHint
-        )
+        if platform.machine() == "aarch64":
+            self.mainWindow.setWindowFlags(
+                self.mainWindow.windowFlags() | Qt.FramelessWindowHint
+            )
 
         self.mainWindow.show()
 
         self.secondaryWindow = pyG5SecondWindow()
-        self.secondaryWindow.setWindowFlags(
-            self.secondaryWindow.windowFlags() | Qt.FramelessWindowHint
-        )
+
+        if platform.machine() == "aarch64":
+            self.secondaryWindow.setWindowFlags(
+                self.secondaryWindow.windowFlags() | Qt.FramelessWindowHint
+            )
 
         # connect the value coming from the simulator
         self.networkManager.drefUpdate.connect(self.secondaryWindow.cWidget.drefHandler)

@@ -578,7 +578,8 @@ class pyG5NetWorkManager(QObject):
         self.idleTimer.stop()
 
         # let the screensaver activate
-        if platform.machine() in "armv7l":
+        if platform.machine() in "aarch64":
+
             os.system("xset s on")
             os.system("xset s 1")
 
@@ -609,7 +610,7 @@ class pyG5NetWorkManager(QObject):
         self.idleTimer.start(self.idleTimerDuration)
 
         # now we can inhibit the screensaver
-        if platform.machine() in "armv7l":
+        if platform.machine() in "aarch64":
             os.system("xset s reset")
             os.system("xset s off")
 
