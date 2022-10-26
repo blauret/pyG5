@@ -44,6 +44,8 @@ class pyG5NetWorkManager(QObject):
             self
         """
         QObject.__init__(self, parent)
+
+        self.xpHost = None
         # sim/cockpit/radios/gps_cdi_sensitivity	int	n	enum	GPS CDI sensitivity: 0=OCN, 1=ENR, 2=TERM, 3=DPRT, 4=MAPR, 5=APR, 6=RNPAR, 7=LNAV, 8=LNAV+V, 9=L/VNAV, 10=LP, 11=LPV, 12=LP+V, 13=GLS
         # list the datarefs to request
         self.datarefs = [
@@ -564,7 +566,8 @@ class pyG5NetWorkManager(QObject):
         message = struct.pack("<5sf", cmd, data)
         message += bytes(path, "utf-8") + b"\x00"
         message += " ".encode("utf-8") * (509 - len(message))
-        self.udpSock.writeDatagram(message, self.xpHost, self.xpPort)
+        if self.xpHost:
+            self.udpSock.writeDatagram(message, self.xpHost, self.xpPort)
 
     @pyqtSlot()
     def reconnect(self):

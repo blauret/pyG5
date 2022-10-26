@@ -2066,7 +2066,7 @@ class pyG5AIWidget(pyG5Widget):
         )
         self.qp.drawRect(rect)
 
-        if self._alt_setting_metric:
+        if 1:
             self.qp.drawText(
                 rect,
                 Qt.AlignHCenter | Qt.AlignVCenter,
