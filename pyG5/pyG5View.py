@@ -611,7 +611,7 @@ class pyG5SecondaryWidget(pyG5Widget):
             )
 
             self.setPen(2, Qt.white)
-            if self._carbheat > 0.1 and self._avionicson:
+            if self._carbheat > 0.1:
                 self.qp.setBrush(QBrush(Qt.green))
             else:
                 self.qp.setBrush(QBrush(Qt.black))
