@@ -84,6 +84,7 @@ class pyG5Widget(QWidget):
             ("fuelPress", 0),
             ("lowVolts", 0),
             ("oilPres", 0),
+            ("parkBrake", 0),
             ("lowVacuum", 0),
             ("lowFuel", 0),
             ("fuelSel", 4),
@@ -747,6 +748,7 @@ class pyG5SecondaryWidget(pyG5Widget):
                 {"text": "LOW\nVOLTS", "color": Qt.red, "name": "_lowVolts"},
                 {"text": "LOW\nFUEL", "color": Qt.red, "name": "_lowFuel"},
                 {"text": "OIL\nPRESS", "color": Qt.red, "name": "_oilPres"},
+                {"text": "BRAKE", "color": Qt.red, "name": "_parkBrake"},
                 {"text": "LOW\nVACUUM", "color": Qt.yellow, "name": "_lowVacuum"},
                 {"text": "FUEL\nPRESS", "color": Qt.yellow, "name": "_fuelPress"},
             ]

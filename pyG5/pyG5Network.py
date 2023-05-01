@@ -51,6 +51,14 @@ class pyG5NetWorkManager(QObject):
         self.datarefs = [
             # ( dataref, frequency, unit, description, num decimals to display in formatted output )
             (
+                "sim/flightmodel/controls/parkbrake",
+                1,
+                "onoff",
+                "Parking brake set",
+                0,
+                "_parkBrake",
+            ),
+            (
                 "sim/cockpit/warnings/annunciators/fuel_quantity",
                 1,
                 "onoff",
