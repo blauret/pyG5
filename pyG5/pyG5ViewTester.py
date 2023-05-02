@@ -113,6 +113,8 @@ if __name__ == "__main__":
     hlayout.addWidget(g5View)
 
     controls = [
+        makeControlDict("altitude", -1000, 45000),
+        makeControlDict("altitudeSel", -1000, 45000),
         makeControlDict("flaps", 0, 4),
         makeControlDict("trims", -1, 1),
         makeControlDict("carbheat", 0, 1),
@@ -125,8 +127,6 @@ if __name__ == "__main__":
         makeControlDict("kias", 0, 230),
         makeControlDict("kiasDelta", -30, 30),
         makeControlDict("gs", 0, 230),
-        makeControlDict("altitude", -1000, 45000),
-        makeControlDict("altitudeSel", -1000, 45000),
         makeControlDict("vh_ind_fpm", -1500, 1500),
         makeControlDict("turnRate", -130, 130),
         makeControlDict("slip", -10, 10),

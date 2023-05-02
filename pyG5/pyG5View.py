@@ -6,7 +6,7 @@ Created on 6 Aug 2021.
 
 import logging
 
-from math import cos, radians, sin, sqrt
+from math import cos, radians, sin, sqrt, floor
 from functools import wraps
 
 from PyQt5.QtCore import QLine, QPoint, QPointF, QRectF, Qt, pyqtSlot, pyqtSignal
@@ -2048,10 +2048,18 @@ class pyG5AIWidget(pyG5Widget):
 
         # Altitude Box
         self.setPen(2, Qt.white)
-
+        altBoxTextSplitRatio = 2 / 5
         altBox = QPolygonF(
             [
-                QPointF(g5Width - altBoxRightAlign, g5CenterY - altBoxHeight / 2),
+                QPointF(g5Width - altBoxRightAlign, g5CenterY - altBoxHeight),
+                QPointF(
+                    g5Width - altBoxRightAlign - altBoxWdith * altBoxTextSplitRatio,
+                    g5CenterY - altBoxHeight,
+                ),
+                QPointF(
+                    g5Width - altBoxRightAlign - altBoxWdith * altBoxTextSplitRatio,
+                    g5CenterY - altBoxHeight / 2,
+                ),
                 QPointF(
                     altTapeLeftAlign,
                     g5CenterY - altBoxHeight / 2,
@@ -2072,7 +2080,15 @@ class pyG5AIWidget(pyG5Widget):
                     altTapeLeftAlign,
                     g5CenterY + altBoxHeight / 2,
                 ),
-                QPointF(g5Width - altBoxRightAlign, g5CenterY + altBoxHeight / 2),
+                QPointF(
+                    g5Width - altBoxRightAlign - altBoxWdith * altBoxTextSplitRatio,
+                    g5CenterY + altBoxHeight / 2,
+                ),
+                QPointF(
+                    g5Width - altBoxRightAlign - altBoxWdith * altBoxTextSplitRatio,
+                    g5CenterY + altBoxHeight,
+                ),
+                QPointF(g5Width - altBoxRightAlign, g5CenterY + altBoxHeight),
             ]
         )
 
@@ -2085,13 +2101,57 @@ class pyG5AIWidget(pyG5Widget):
             QRectF(
                 altTapeLeftAlign,
                 g5CenterY - altBoxHeight / 2,
-                altBoxWdith,
+                altBoxWdith * (1 - altBoxTextSplitRatio),
                 altBoxHeight,
             ),
-            Qt.AlignHCenter | Qt.AlignVCenter,
-            "{:05d}".format(int(self._altitude)),
+            Qt.AlignRight | Qt.AlignVCenter,
+            "{:d}".format(int(self._altitude / 100)),
         )
 
+        # implement the last 2 digits in 20 ft steps
+        altStep = 20
+
+        # extract the last 2 digit
+        altLowerDigit = int(self._altitude % 100)
+
+        # floor the last to digit to the closest multiple of 20
+        altLowerDigitrounded = 20 * floor(altLowerDigit / 20)
+
+        altLowerDigitMod20 = altLowerDigit % 20
+
+        # fill the array centered on the floor value in multiple of 20ft
+        altArray = []
+        for i in range(5):
+            altArray.append((altLowerDigitrounded + altStep * (2 - i)) % 100)
+
+        # define a clip rect to avoid overflowing the alt box
+        self.qp.setClipRect(
+            QRectF(
+                g5Width - altBoxRightAlign - altBoxWdith * altBoxTextSplitRatio,
+                g5CenterY - altBoxHeight,
+                altBoxWdith * altBoxTextSplitRatio,
+                2 * altBoxHeight,
+            )
+        )
+
+        # draw the last 2 digits altitude
+        self.qp.drawText(
+            QRectF(
+                altTapeLeftAlign + altBoxWdith * (1 - altBoxTextSplitRatio),
+                g5CenterY
+                - 2 * altBoxHeight
+                + 0.8 * altBoxHeight * (altLowerDigitMod20 / 20),
+                altBoxWdith * altBoxTextSplitRatio,
+                4 * altBoxHeight,
+            ),
+            Qt.AlignHCenter | Qt.AlignVCenter,
+            "\n".join("{:02d}".format(t) for t in altArray),
+        )
+
+        # clear clip rect
+        self.qp.setClipRect(0, 0, g5Width, g5Height)
+
+        # draw the altimeter setting
         pen = self.qp.pen()
         pen.setColor(Qt.cyan)
         pen.setWidth(2)
