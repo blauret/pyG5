@@ -2022,13 +2022,13 @@ class pyG5AIWidget(pyG5Widget):
         self.qp.setBrush(brush)
 
         altSelCenter = g5CenterY
-        if self._altitudeSel >= int(self._altitude + altTapeScale / 2):
-            altSelCenter = 0
-        elif self._altitudeSel <= int(self._altitude - altTapeScale / 2):
-            altSelCenter = g5Height
+        if self._altitudeSel >= int(self._altitude + altTapeScale / 2 - 24):
+            altSelCenter = altSettingHeight
+        elif self._altitudeSel <= int(self._altitude - altTapeScale / 2 + 24):
+            altSelCenter = g5Height - altSettingHeight
         else:
             altSelCenter = (
-                (int(self._altitude + altTapeScale / 2) - self._altitudeSel)
+                (floor(self._altitude + altTapeScale / 2) - self._altitudeSel)
                 / altTapeScale
                 * g5Height
             )
@@ -2177,6 +2177,26 @@ class pyG5AIWidget(pyG5Widget):
                 Qt.AlignHCenter | Qt.AlignVCenter,
                 "{:02.02f}".format(self._alt_setting),
             )
+
+        # draw the altitude selector
+        pen = self.qp.pen()
+        pen.setColor(Qt.cyan)
+        pen.setWidth(2)
+        self.qp.setPen(pen)
+        leftAlign = altTapeLeftAlign - 1.5 * altBoxSpikedimension
+        rect = QRectF(
+            leftAlign,
+            0,
+            g5Width - leftAlign,
+            altSettingHeight,
+        )
+        self.qp.drawRect(rect)
+
+        self.qp.drawText(
+            rect,
+            Qt.AlignHCenter | Qt.AlignVCenter,
+            "{:d}ft".format(self._altitudeSel),
+        )
 
         #################################################
         # Turn coordinator
