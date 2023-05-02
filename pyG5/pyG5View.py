@@ -128,6 +128,7 @@ class pyG5Widget(QWidget):
             ("kiasDelta", 0),
             ("ktas", 0),
             ("altitude", 0),
+            ("altitudeSel", 0),
             ("alt_setting", 1013),
             ("alt_setting_metric", 1),
             ("vh_ind_fpm", 0),
@@ -2011,6 +2012,42 @@ class pyG5AIWidget(pyG5Widget):
                     )
 
             currentTape -= 1
+
+        # altitude selector
+        pen = self.qp.pen()
+        pen.setColor(Qt.cyan)
+        pen.setWidth(2)
+        self.qp.setPen(pen)
+        brush = QBrush(QColor(Qt.cyan))
+        self.qp.setBrush(brush)
+
+        altSelCenter = g5CenterY
+        if self._altitudeSel >= int(self._altitude + altTapeScale / 2):
+            altSelCenter = 0
+        elif self._altitudeSel <= int(self._altitude - altTapeScale / 2):
+            altSelCenter = g5Height
+        else:
+            altSelCenter = (
+                (int(self._altitude + altTapeScale / 2) - self._altitudeSel)
+                / altTapeScale
+                * g5Height
+            )
+
+        altSel = QPolygonF(
+            [
+                QPointF(alttapteLeftBound, altSelCenter - altBoxHeight / 2),
+                QPointF(alttapteLeftBound, altSelCenter + altBoxHeight / 2),
+                QPointF(altTapeLeftAlign, altSelCenter + altBoxHeight / 2),
+                QPointF(altTapeLeftAlign, altSelCenter + altBoxSpikedimension),
+                QPointF(altTapeLeftAlign - altBoxSpikedimension, altSelCenter),
+                QPointF(altTapeLeftAlign, altSelCenter - altBoxSpikedimension),
+                QPointF(altTapeLeftAlign, altSelCenter - altBoxHeight / 2),
+            ]
+        )
+        self.qp.drawPolygon(altSel)
+
+        # Altitude Box
+        self.setPen(2, Qt.white)
 
         altBox = QPolygonF(
             [
