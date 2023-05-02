@@ -467,6 +467,14 @@ class pyG5NetWorkManager(QObject):
                 "_altitude",
             ),
             (
+                "sim/cockpit2/autopilot/altitude_dial_ft",
+                30,
+                "feet",
+                "Altitude",
+                0,
+                "_altitudeSel",
+            ),
+            (
                 "sim/cockpit2/gauges/actuators/barometer_setting_in_hg_pilot",
                 30,
                 "feet",
