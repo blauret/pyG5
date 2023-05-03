@@ -6,7 +6,7 @@ Created on 6 Aug 2021.
 
 import logging
 
-from math import cos, radians, sin, sqrt, floor
+from math import cos, radians, sin, sqrt, floor, ceil
 from functools import wraps
 
 from PyQt5.QtCore import QLine, QPoint, QPointF, QRectF, Qt, pyqtSlot, pyqtSignal
@@ -2099,29 +2099,13 @@ class pyG5AIWidget(pyG5Widget):
 
         # implement the last 2 digits in 20 ft steps
         altStep = 20
-
-        # extract the last 2 digit
-        altLowerDigit = int(self._altitude % 100)
-
-        # floor the last to digit to the closest multiple of 20
-        altLowerDigitrounded = 20 * floor(altLowerDigit / 20)
-
-        altLowerDigitMod20 = altLowerDigit % 20
-
-        # fill the array centered on the floor value in multiple of 20ft
-        altArray = []
-        for i in range(5):
-            tmp = altLowerDigitrounded + altStep * (2 - i)
-            if int(self._altitude / 100) * 100 + tmp >= 0:
-                altArray.append(tmp % 100)
-            else:
-                altArray.append((100 - tmp) % 100)
-
-        altString = "{:05d}".format(self._altitude)
-
         charWidth = 15
 
-        if self._altitude > 9900:
+
+
+        if self._altitude < 0 and self._altitude > -1000:
+
+            # Add the  minus sign
             dispRect = QRectF(
                 altTapeLeftAlign,
                 g5CenterY - altBoxHeight / 2,
@@ -2129,53 +2113,182 @@ class pyG5AIWidget(pyG5Widget):
                 altBoxHeight,
             )
 
-            if (
-                altString[1] == "9"
-                and altString[2] == "9"
-                and altLowerDigitrounded == 80
-            ):
-                self.qp.setClipRect(dispRect)
+            self.qp.drawText(
+                dispRect,
+                Qt.AlignHCenter | Qt.AlignVCenter,
+                "-",
+            )
 
-                self.qp.drawText(
-                    QRectF(
-                        altTapeLeftAlign,
-                        g5CenterY
-                        - altBoxHeight / 2
-                        - 20
-                        + +0.8 * altBoxHeight * (altLowerDigitMod20 / 20),
-                        charWidth,
-                        60,
-                    ),
-                    Qt.AlignHCenter | Qt.AlignTop,
-                    "{:01d}\n{}".format((int(altString[0]) + 1) % 10, altString[0])
-                    if self._altitude >= 10000
-                    else "{:01d}\n ".format((int(altString[0]) + 1) % 10),
-                )
+            # extract lower digits
+            altLowerDigit = int("{:05d}".format(self._altitude)[3:5])
 
-                self.qp.setClipRect(0, 0, g5Width, g5Height)
+            # floor the last to digit to the closest multiple of 20
+            altLowerDigitrounded = 20 * floor(altLowerDigit / 20)
+
+            altLowerDigitMod20 = altLowerDigit % 20
+
+            if self._altitude >= -40:
+                pass
+                if altLowerDigitrounded == 20:
+                    altArray = [20,  0 , 20, 40, 60]
+                elif altLowerDigitrounded == 40:
+                    altArray = [0 , 20, 40, 60, 80]
+                else:
+                    altArray = [40, 20, 0 , 20, 40]
+
 
             else:
-                self.qp.drawText(
-                    dispRect,
-                    Qt.AlignHCenter | Qt.AlignVCenter,
-                    altString[0] if self._altitude >= 10000 else "",
-                )
-                pass
+                altArray= []
+                for i in range(5):
+                    tmp = altLowerDigitrounded + altStep * (i - 2)
+                    if int(self._altitude / 100) * 100 + tmp >= 0:
+                        altArray.append(tmp % 100)
+                    else:
+                        altArray.append((100 - tmp) % 100)
 
-        if self._altitude >= 980:
+
+                print(altArray)
+
+            # define a clip rect to avoid overflowing the alt box
+            self.qp.setClipRect(
+                QRectF(
+                    g5Width - altBoxRightAlign - altBoxWdith * altBoxTextSplitRatio,
+                    g5CenterY - altBoxHeight,
+                    altBoxWdith * altBoxTextSplitRatio,
+                    2 * altBoxHeight,
+                )
+            )
+
+            # draw the last 2 digits altitude
+            self.qp.drawText(
+                QRectF(
+                    altTapeLeftAlign + altBoxWdith * (1 - altBoxTextSplitRatio),
+                    g5CenterY
+                    - 2 * altBoxHeight
+                    - 0.8 * altBoxHeight * (altLowerDigitMod20 / 20),
+                    altBoxWdith * altBoxTextSplitRatio,
+                    4 * altBoxHeight,
+                ),
+                Qt.AlignHCenter | Qt.AlignVCenter,
+                "\n".join("{:02d}".format(t) for t in altArray),
+            )
+
+            # clear clip rect
+            self.qp.setClipRect(0, 0, g5Width, g5Height)                
+
+        if self._altitude >= 0 :
+
+            # extract the last 2 digit
+            altLowerDigit = int(self._altitude % 100)
+
+            # floor the last to digit to the closest multiple of 20
+            altLowerDigitrounded = 20 * floor(altLowerDigit / 20)
+
+            altLowerDigitMod20 = altLowerDigit % 20
+
+            # fill the array centered on the floor value in multiple of 20ft
+            altArray = []
+            for i in range(5):
+                tmp = altLowerDigitrounded + altStep * (2 - i)
+                if int(self._altitude / 100) * 100 + tmp >= 0:
+                    altArray.append(tmp % 100)
+                else:
+                    altArray.append((100 - tmp) % 100)
+
+            altString = "{:05d}".format(int(self._altitude))
+
+
+            if self._altitude > 9900:
+                dispRect = QRectF(
+                    altTapeLeftAlign,
+                    g5CenterY - altBoxHeight / 2,
+                    charWidth,
+                    altBoxHeight,
+                )
+
+                if (
+                    altString[1] == "9"
+                    and altString[2] == "9"
+                    and altLowerDigitrounded == 80
+                ):
+                    self.qp.setClipRect(dispRect)
+
+                    self.qp.drawText(
+                        QRectF(
+                            altTapeLeftAlign,
+                            g5CenterY
+                            - altBoxHeight / 2
+                            - 20
+                            + +0.8 * altBoxHeight * (altLowerDigitMod20 / 20),
+                            charWidth,
+                            60,
+                        ),
+                        Qt.AlignHCenter | Qt.AlignTop,
+                        "{:01d}\n{}".format((int(altString[0]) + 1) % 10, altString[0])
+                        if self._altitude >= 10000
+                        else "{:01d}\n ".format((int(altString[0]) + 1) % 10),
+                    )
+
+                    self.qp.setClipRect(0, 0, g5Width, g5Height)
+
+                else:
+                    self.qp.drawText(
+                        dispRect,
+                        Qt.AlignHCenter | Qt.AlignVCenter,
+                        altString[0] if self._altitude >= 10000 else "",
+                    )
+
+            if self._altitude >= 980:
+                dispRect = QRectF(
+                    altTapeLeftAlign + charWidth,
+                    g5CenterY - altBoxHeight / 2,
+                    charWidth,
+                    altBoxHeight,
+                )
+
+                if altString[2] == "9" and altLowerDigitrounded == 80:
+                    self.qp.setClipRect(dispRect)
+
+                    self.qp.drawText(
+                        QRectF(
+                            altTapeLeftAlign + charWidth,
+                            g5CenterY
+                            - altBoxHeight / 2
+                            - 20
+                            + +0.8 * altBoxHeight * (altLowerDigitMod20 / 20),
+                            charWidth,
+                            60,
+                        ),
+                        Qt.AlignHCenter | Qt.AlignTop,
+                        "{:01d}\n{}".format((int(altString[1]) + 1) % 10, altString[1])
+                        if self._altitude >= 1000
+                        else "{:01d}\n ".format((int(altString[1]) + 1) % 10),
+                    )
+
+                    self.qp.setClipRect(0, 0, g5Width, g5Height)
+
+                else:
+                    self.qp.drawText(
+                        dispRect,
+                        Qt.AlignHCenter | Qt.AlignVCenter,
+                        altString[1] if self._altitude >= 1000 else "",
+                    )
+                    pass
+
             dispRect = QRectF(
-                altTapeLeftAlign + charWidth,
+                altTapeLeftAlign + 2 * charWidth,
                 g5CenterY - altBoxHeight / 2,
                 charWidth,
                 altBoxHeight,
             )
 
-            if altString[2] == "9" and altLowerDigitrounded == 80:
+            if altLowerDigitrounded == 80:
+
                 self.qp.setClipRect(dispRect)
 
                 self.qp.drawText(
                     QRectF(
-                        altTapeLeftAlign + charWidth,
+                        altTapeLeftAlign + 2 * charWidth,
                         g5CenterY
                         - altBoxHeight / 2
                         - 20
@@ -2184,76 +2297,38 @@ class pyG5AIWidget(pyG5Widget):
                         60,
                     ),
                     Qt.AlignHCenter | Qt.AlignTop,
-                    "{:01d}\n{}".format((int(altString[1]) + 1) % 10, altString[1])
-                    if self._altitude >= 1000
-                    else "{:01d}\n ".format((int(altString[1]) + 1) % 10),
+                    "{:01d}\n{}".format((int(altString[2]) + 1) % 10, altString[2]),
                 )
-
                 self.qp.setClipRect(0, 0, g5Width, g5Height)
-
             else:
-                self.qp.drawText(
-                    dispRect,
-                    Qt.AlignHCenter | Qt.AlignVCenter,
-                    altString[1] if self._altitude >= 1000 else "",
+                self.qp.drawText(dispRect, Qt.AlignHCenter | Qt.AlignVCenter, altString[2])
+
+            # define a clip rect to avoid overflowing the alt box
+            self.qp.setClipRect(
+                QRectF(
+                    g5Width - altBoxRightAlign - altBoxWdith * altBoxTextSplitRatio,
+                    g5CenterY - altBoxHeight,
+                    altBoxWdith * altBoxTextSplitRatio,
+                    2 * altBoxHeight,
                 )
-                pass
+            )
 
-        dispRect = QRectF(
-            altTapeLeftAlign + 2 * charWidth,
-            g5CenterY - altBoxHeight / 2,
-            charWidth,
-            altBoxHeight,
-        )
-
-        if altLowerDigitrounded == 80:
-
-            self.qp.setClipRect(dispRect)
-
-            txt = "{:01d}\n{}".format((int(altString[2]) + 1) % 10, altString[2])
+            # draw the last 2 digits altitude
             self.qp.drawText(
                 QRectF(
-                    altTapeLeftAlign + 2 * charWidth,
+                    altTapeLeftAlign + altBoxWdith * (1 - altBoxTextSplitRatio),
                     g5CenterY
-                    - altBoxHeight / 2
-                    - 20
-                    + +0.8 * altBoxHeight * (altLowerDigitMod20 / 20),
-                    charWidth,
-                    60,
+                    - 2 * altBoxHeight
+                    + 0.8 * altBoxHeight * (altLowerDigitMod20 / 20),
+                    altBoxWdith * altBoxTextSplitRatio,
+                    4 * altBoxHeight,
                 ),
-                Qt.AlignHCenter | Qt.AlignTop,
-                "{:01d}\n{}".format((int(altString[2]) + 1) % 10, altString[2]),
+                Qt.AlignHCenter | Qt.AlignVCenter,
+                "\n".join("{:02d}".format(t) for t in altArray),
             )
+
+            # clear clip rect
             self.qp.setClipRect(0, 0, g5Width, g5Height)
-        else:
-            self.qp.drawText(dispRect, Qt.AlignHCenter | Qt.AlignVCenter, altString[2])
-
-        # define a clip rect to avoid overflowing the alt box
-        self.qp.setClipRect(
-            QRectF(
-                g5Width - altBoxRightAlign - altBoxWdith * altBoxTextSplitRatio,
-                g5CenterY - altBoxHeight,
-                altBoxWdith * altBoxTextSplitRatio,
-                2 * altBoxHeight,
-            )
-        )
-
-        # draw the last 2 digits altitude
-        self.qp.drawText(
-            QRectF(
-                altTapeLeftAlign + altBoxWdith * (1 - altBoxTextSplitRatio),
-                g5CenterY
-                - 2 * altBoxHeight
-                + 0.8 * altBoxHeight * (altLowerDigitMod20 / 20),
-                altBoxWdith * altBoxTextSplitRatio,
-                4 * altBoxHeight,
-            ),
-            Qt.AlignHCenter | Qt.AlignVCenter,
-            "\n".join("{:02d}".format(t) for t in altArray),
-        )
-
-        # clear clip rect
-        self.qp.setClipRect(0, 0, g5Width, g5Height)
 
         # draw the altimeter setting
         pen = self.qp.pen()
@@ -2295,7 +2370,7 @@ class pyG5AIWidget(pyG5Widget):
             altSettingHeight,
         )
         self.qp.drawRect(rect)
-        print(self._altitudeSel,type(self._altitudeSel))
+
         self.qp.drawText(
             rect,
             Qt.AlignHCenter | Qt.AlignVCenter,
