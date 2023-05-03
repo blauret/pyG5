@@ -180,7 +180,6 @@ class pyG5MainWindow(QMainWindow):
         target = "FreeSans"
 
         if target in QFontDatabase().families():
-            print("set font")
             font = QFont(target)
             self.setFont(font)
 
