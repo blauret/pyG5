@@ -955,8 +955,9 @@ class pyG5HSIWidget(pyG5Widget):
         gpscdianonciator = ""
         if int(self._hsiSource) == 2:
             cdiSource = "GPS"
-
+            # 0=OCN, 1=ENR, 2=TERM, 3=DPRT, 4=MAPR, 5=APR, 6=RNPAR, 7=LNAV, 8=LNAV+V, 9=L/VNAV, 10=LP, 11=LPV, 12=LP+V, 13=GLS
             sensi = round(self._gpshsisens, 1)
+            print(self._gpshsisens)
             if sensi <= 0.1:
                 gpscdianonciator = "LNAV"
             elif sensi == 0.12:
