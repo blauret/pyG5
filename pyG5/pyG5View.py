@@ -2122,7 +2122,11 @@ class pyG5AIWidget(pyG5Widget):
         # fill the array centered on the floor value in multiple of 20ft
         altArray = []
         for i in range(5):
-            altArray.append((altLowerDigitrounded + altStep * (2 - i)) % 100)
+            tmp = (altLowerDigitrounded + altStep * (2 - i))
+            if int(self._altitude % 1000) + tmp >=0:
+                altArray.append(tmp  % 100)
+            else :
+                altArray.append((100 - tmp) % 100)
 
         # define a clip rect to avoid overflowing the alt box
         self.qp.setClipRect(
@@ -2191,11 +2195,11 @@ class pyG5AIWidget(pyG5Widget):
             altSettingHeight,
         )
         self.qp.drawRect(rect)
-
+        print(self._altitudeSel,type(self._altitudeSel))
         self.qp.drawText(
             rect,
             Qt.AlignHCenter | Qt.AlignVCenter,
-            "{:d}ft".format(self._altitudeSel),
+            "{:d}ft".format(int(self._altitudeSel)),
         )
 
         #################################################
