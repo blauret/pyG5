@@ -173,10 +173,10 @@ class pyG5NetWorkManager(QObject):
                 # int	n	enum	GPS CDI sensitivity: 0=OCN, 1=ENR, 2=TERM, 3=DPRT, 4=MAPR, 5=APR, 6=RNPAR, 7=LNAV, 8=LNAV+V, 9=L/VNAV, 10=LP, 11=LPV, 12=LP+V, 13=GLS
                 "sim/cockpit/radios/gps_cdi_sensitivity",
                 1,
-                "boolean",
-                "Avionics powered on",
+                "index",
+                "GPS HSI sensitivity mode",
                 0,
-                "_test",
+                "_gpshsisens",
             ),
             (
                 "sim/cockpit/radios/gps_has_glideslope",
@@ -185,14 +185,6 @@ class pyG5NetWorkManager(QObject):
                 "GPS GS available",
                 0,
                 "_gpsgsavailable",
-            ),
-            (
-                "sim/cockpit/radios/gps_hdef_nm_per_dot",
-                1,
-                "boolean",
-                "Avionics powered on",
-                0,
-                "_gpshsisens",
             ),
             (
                 "sim/cockpit/radios/gps_gp_mtr_per_dot",
