@@ -9,7 +9,16 @@ import logging
 from math import cos, radians, sin, sqrt, floor, ceil
 from functools import wraps
 
-from PyQt5.QtCore import QLine, QPoint, QPointF, QRectF, Qt, pyqtSlot, pyqtSignal
+from PyQt5.QtCore import (
+    QLine,
+    QPoint,
+    QPointF,
+    QRectF,
+    QLineF,
+    Qt,
+    pyqtSlot,
+    pyqtSignal,
+)
 from PyQt5.QtGui import (
     QBrush,
     QPainter,
@@ -28,9 +37,44 @@ g5CenterX = g5Width / 2
 g5Height = 360
 g5CenterY = g5Height / 2
 
+
+fmaHeight = 30
+
 g5Diag = sqrt(g5Width**2 + g5Height**2)
 
 mstokt = 1.94384
+
+
+class pyG5DualStackFMA(QWidget):
+    """Base class for the G5 wdiget view."""
+
+    def __init__(self, parent=None):
+        """g5Widget Constructor.
+
+        Args:
+            parent: Parent Widget
+
+        Returns:
+            self
+        """
+        QWidget.__init__(self, parent)
+
+        self.pyG5FMA = pyG5FMA()
+        self.pyG5FMA.setFixedSize(g5Width, fmaHeight)
+
+        self.pyG5AI = pyG5AIWidget()
+        self.pyG5AI.setFixedSize(g5Width, g5Height)
+        self.pyG5HSI = pyG5HSIWidget()
+        self.pyG5HSI.setFixedSize(g5Width, g5Height)
+
+        self.vlayout = QVBoxLayout()
+        self.vlayout.addWidget(self.pyG5FMA)
+        self.vlayout.addWidget(self.pyG5AI)
+        self.vlayout.addWidget(self.pyG5HSI)
+        self.vlayout.setSpacing(0)
+        self.vlayout.setContentsMargins(0, 0, 0, 0)
+
+        self.setLayout(self.vlayout)
 
 
 class pyG5DualStack(QWidget):
@@ -81,6 +125,12 @@ class pyG5Widget(QWidget):
 
         """property name, default value"""
         propertyList = [
+            ("navSrc", 0),
+            ("apAltitude", 0),
+            ("apVS", 0),
+            ("apAirSpeed", 0),
+            ("apState", 0),
+            ("apMode", 0),
             ("fuelPress", 0),
             ("lowVolts", 0),
             ("oilPres", 0),
@@ -172,6 +222,26 @@ class pyG5Widget(QWidget):
                 setattr(self, value[3], value[0])
             except Exception as e:
                 self.logger.error("failed to set value {}: {}".format(value[5], e))
+
+    def getNavTypeString(self, navType, navIndex):
+        """getNavTypeString.
+
+        Args:
+            type: type number
+
+        Returns:
+            string
+        """
+        value = int(navType)
+
+        if value == 0:
+            return ""
+        elif value == 3:
+            return "VOR" + navIndex
+        elif value >= 4:
+            return "LOC" + navIndex
+
+        logging.error("Failed to decode navtype")
 
 
 secWidth = 800
@@ -307,7 +377,6 @@ class pyG5SecondaryWidget(pyG5Widget):
                 if self.xpdrkeyRect.contains(event.pos()):
                     for key in self.keyArea:
                         if key[0].contains(event.pos()):
-
                             # the input is a BCD value received as integer.
                             # First step is to turn it into a real integer
                             codestr = "{:04d}".format(int(self._xpdrCode))
@@ -521,7 +590,6 @@ class pyG5SecondaryWidget(pyG5Widget):
 
         # sqawk code and status
         if self._avionicson:
-
             font = self.qp.font()
             font.setPixelSize(self.xpdrheight - 6)
             font.setBold(True)
@@ -571,7 +639,6 @@ class pyG5SecondaryWidget(pyG5Widget):
             )
 
         if self.xpdrKeyboard:
-
             self.setPen(2, Qt.white)
             self.qp.setBrush(QBrush(Qt.black))
             self.qp.drawRect(self.xpdrkeyRect)
@@ -800,26 +867,6 @@ class pyG5HSIWidget(pyG5Widget):
         """
         pyG5Widget.__init__(self, parent)
 
-    def getNavTypeString(self, navType, navIndex):
-        """getNavTypeString.
-
-        Args:
-            type: type number
-
-        Returns:
-            string
-        """
-        value = int(navType)
-
-        if value == 0:
-            return ""
-        elif value == 3:
-            return "VOR" + navIndex
-        elif value >= 4:
-            return "LOC" + navIndex
-
-        logging.error("Failed to decode navtype")
-
     def paintEvent(self, event):
         """Paint the widget."""
         self.qp = QPainter(self)
@@ -956,7 +1003,23 @@ class pyG5HSIWidget(pyG5Widget):
         if int(self._hsiSource) == 2:
             cdiSource = "GPS"
             # 0=OCN, 1=ENR, 2=TERM, 3=DPRT, 4=MAPR, 5=APR, 6=RNPAR, 7=LNAV, 8=LNAV+V, 9=L/VNAV, 10=LP, 11=LPV, 12=LP+V, 13=GLS
-            tableMap = ["OCN", "ENR", "TERM", "DPRT", "MAPR", "APR", "RNPAR", "LNAV", "LNAV+V", "L/VNAV", "LP", "LPV", "LP+V", "GLS",""]
+            tableMap = [
+                "OCN",
+                "ENR",
+                "TERM",
+                "DPRT",
+                "MAPR",
+                "APR",
+                "RNPAR",
+                "LNAV",
+                "LNAV+V",
+                "L/VNAV",
+                "LP",
+                "LPV",
+                "LP+V",
+                "GLS",
+                "",
+            ]
             try:
                 gpscdianonciator = tableMap[int(self._gpshsisens)]
             except:
@@ -1705,7 +1768,6 @@ class pyG5AIWidget(pyG5Widget):
         self.qp.drawRect(QRectF(0, 0, speedBoxLeftAlign + speedBoxWdith + 15, g5Height))
 
         if (self._kias + tapeScale / 2) > self._vne:
-
             brush = QBrush(QColor(Qt.red))
             self.qp.setBrush(brush)
 
@@ -1719,7 +1781,6 @@ class pyG5AIWidget(pyG5Widget):
             )
 
         if (self._kias + tapeScale / 2) > self._vno:
-
             brush = QBrush(QColor(Qt.yellow))
             self.qp.setBrush(brush)
 
@@ -1733,7 +1794,6 @@ class pyG5AIWidget(pyG5Widget):
             )
 
         if (self._kias + tapeScale / 2) > self._vs:
-
             brush = QBrush(QColor(Qt.green))
             self.qp.setBrush(brush)
             self.qp.drawRect(
@@ -1746,7 +1806,6 @@ class pyG5AIWidget(pyG5Widget):
             )
 
         if (self._kias + tapeScale / 2) > self._vs:
-
             brush = QBrush(QColor(Qt.white))
             self.qp.setBrush(brush)
             self.qp.drawRect(
@@ -1770,7 +1829,6 @@ class pyG5AIWidget(pyG5Widget):
         currentTape = int(self._kias + tapeScale / 2)
         while currentTape > max(0, self._kias - tapeScale / 2):
             if (currentTape % 10) == 0:
-
                 tapeHeight = (
                     1 - 2 * (currentTape - self._kias) / tapeScale
                 ) * g5CenterY
@@ -1939,7 +1997,6 @@ class pyG5AIWidget(pyG5Widget):
         while currentTape >= 0:
             tapeHeight = (vsScale - currentTape) / vsScale * g5Height
             if (currentTape % 5) == 0:
-
                 self.qp.drawLine(
                     QPointF(g5Width - 10, tapeHeight),
                     QPointF(g5Width, tapeHeight),
@@ -1984,7 +2041,6 @@ class pyG5AIWidget(pyG5Widget):
 
         while currentTape > self._altitude - altTapeScale / 2:
             if (currentTape % 20) == 0:
-
                 tapeHeight = (
                     1 - 2 * (currentTape - self._altitude) / altTapeScale
                 ) * g5CenterY
@@ -1993,7 +2049,6 @@ class pyG5AIWidget(pyG5Widget):
                     QPointF(altTapeLeftAlign - altBoxSpikedimension / 2, tapeHeight),
                 )
                 if (currentTape % 100) == 0:
-
                     self.qp.drawText(
                         QRectF(
                             altTapeLeftAlign,
@@ -2095,10 +2150,7 @@ class pyG5AIWidget(pyG5Widget):
         altStep = 20
         charWidth = 15
 
-
-
         if self._altitude < 0 and self._altitude > -1000:
-
             # Add the  minus sign
             dispRect = QRectF(
                 altTapeLeftAlign,
@@ -2124,22 +2176,20 @@ class pyG5AIWidget(pyG5Widget):
             if self._altitude >= -40:
                 pass
                 if altLowerDigitrounded == 20:
-                    altArray = [20,  0 , 20, 40, 60]
+                    altArray = [20, 0, 20, 40, 60]
                 elif altLowerDigitrounded == 40:
-                    altArray = [0 , 20, 40, 60, 80]
+                    altArray = [0, 20, 40, 60, 80]
                 else:
-                    altArray = [40, 20, 0 , 20, 40]
-
+                    altArray = [40, 20, 0, 20, 40]
 
             else:
-                altArray= []
+                altArray = []
                 for i in range(5):
                     tmp = altLowerDigitrounded + altStep * (i - 2)
                     if int(self._altitude / 100) * 100 + tmp >= 0:
                         altArray.append(tmp % 100)
                     else:
                         altArray.append((100 - tmp) % 100)
-
 
                 print(altArray)
 
@@ -2168,10 +2218,9 @@ class pyG5AIWidget(pyG5Widget):
             )
 
             # clear clip rect
-            self.qp.setClipRect(0, 0, g5Width, g5Height)                
+            self.qp.setClipRect(0, 0, g5Width, g5Height)
 
-        if self._altitude >= 0 :
-
+        if self._altitude >= 0:
             # extract the last 2 digit
             altLowerDigit = int(self._altitude % 100)
 
@@ -2190,7 +2239,6 @@ class pyG5AIWidget(pyG5Widget):
                     altArray.append((100 - tmp) % 100)
 
             altString = "{:05d}".format(int(self._altitude))
-
 
             if self._altitude > 9900:
                 dispRect = QRectF(
@@ -2277,7 +2325,6 @@ class pyG5AIWidget(pyG5Widget):
             )
 
             if altLowerDigitrounded == 80:
-
                 self.qp.setClipRect(dispRect)
 
                 self.qp.drawText(
@@ -2295,7 +2342,9 @@ class pyG5AIWidget(pyG5Widget):
                 )
                 self.qp.setClipRect(0, 0, g5Width, g5Height)
             else:
-                self.qp.drawText(dispRect, Qt.AlignHCenter | Qt.AlignVCenter, altString[2])
+                self.qp.drawText(
+                    dispRect, Qt.AlignHCenter | Qt.AlignVCenter, altString[2]
+                )
 
             # define a clip rect to avoid overflowing the alt box
             self.qp.setClipRect(
@@ -2499,3 +2548,163 @@ class pyG5AIWidget(pyG5Widget):
         )
 
         return QLine(startPoint, endPoint)
+
+
+class pyG5FMA(pyG5Widget):
+    """Generate G5 wdiget view."""
+
+    def __init__(self, parent=None):
+        """g5Widget Constructor.
+
+        Args:
+            parent: Parent Widget
+
+        Returns:
+            self
+        """
+        pyG5Widget.__init__(self, parent)
+
+    def paintEvent(self, event):
+        """Paint the widget."""
+        diamondHeight = 14
+        diamondWidth = 14
+
+        self.qp = QPainter(self)
+
+        self.setPen(1, Qt.black)
+        self.qp.setBrush(QBrush(Qt.black))
+        self.qp.drawRect(0, 0, g5Width, fmaHeight)
+
+        if self._avionicson == 0:
+            self.setPen(1, Qt.white)
+            self.qp.drawLine(0, 0, g5Width, fmaHeight)
+            self.qp.drawLine(0, fmaHeight, g5Width, 0)
+            self.qp.end()
+            return
+
+        # draw the FMA sections delimiters
+        delimMargin = 5
+        self.setPen(2, Qt.white)
+        self.qp.drawLine(
+            QLineF(g5Width / 2, delimMargin, g5Width / 2, fmaHeight - delimMargin)
+        )
+        self.qp.drawLine(
+            QLineF(g5Width / 3, delimMargin, g5Width / 3, fmaHeight - delimMargin)
+        )
+
+        self.setPen(2, Qt.green)
+
+        font = self.qp.font()
+        font.setPixelSize(20)
+        font.setBold(True)
+        self.qp.setFont(font)
+
+        # draw the text when the AP is engaged
+        if self._apMode != 0:
+            # Draw the AP mode
+            mode = "AP" if self._apMode == 2 else "FD"
+            self.qp.drawText(
+                QRectF(
+                    g5Width / 3 + delimMargin,
+                    delimMargin,
+                    g5Width / 6 - 2 * delimMargin,
+                    fmaHeight - 2 * delimMargin,
+                ),
+                Qt.AlignHCenter | Qt.AlignVCenter,
+                mode,
+            )
+
+            # find the engaged horizontal navigation mode
+            if int(self._apState) & 0x2:
+                hmode = "HDG"
+            elif int(self._apState) & 0x4:
+                hmode = "ROL"
+            elif int(self._apState) & 0x200:
+                if int(self._hsiSource) == 2:
+                    hmode = "GPS"
+                elif int(self._hsiSource) == 1:
+                    hmode = "{}".format(self.getNavTypeString(self._nav2type, ""))
+                elif int(self._hsiSource) == 0:
+                    hmode = "{}".format(self.getNavTypeString(self._nav1type, ""))
+                else:
+                    hmode = "ERR"
+            else:
+                hmode = ""
+            self.qp.drawText(
+                QRectF(
+                    g5Width / 6 + delimMargin,
+                    delimMargin,
+                    g5Width / 6 - 2 * delimMargin,
+                    fmaHeight - 2 * delimMargin,
+                ),
+                Qt.AlignHCenter | Qt.AlignVCenter,
+                hmode,
+            )
+
+            # find the engaged vertical navigation mode
+            if int(self._apState) & 0x8:
+                vmode = "FLC {} kts".format(int(self._apAirSpeed))
+            elif int(self._apState) & 0x10:
+                vmode = "VS {} fpm".format(int(self._apVS))
+            elif int(self._apState) & 0x800:
+                vmode = "GS"
+            elif int(self._apState) & 0x4000:
+                vmode = "ALT {} ft".format(int(self._apAltitude))
+            else:
+                vmode = "PIT"
+
+            self.qp.drawText(
+                QRectF(
+                    g5Width / 2 + delimMargin,
+                    delimMargin,
+                    g5Width * 2 / 6 - 2 * delimMargin,
+                    fmaHeight - 2 * delimMargin,
+                ),
+                Qt.AlignHCenter | Qt.AlignVCenter,
+                vmode,
+            )
+
+        # draw the armed horizontal navigation mode
+        self.setPen(2, Qt.white)
+
+        if int(self._apState) & 0x100:
+            if int(self._hsiSource) == 2:
+                hmode = "GPS"
+            elif int(self._hsiSource) == 1:
+                print("_nav2type source", self._nav2type)
+                hmode = "{}".format(self.getNavTypeString(self._nav2type, ""))
+            elif int(self._hsiSource) == 0:
+                hmode = "{}".format(self.getNavTypeString(self._nav1type, ""))
+            else:
+                hmode = "ERR"
+
+            self.qp.drawText(
+                QRectF(
+                    delimMargin,
+                    delimMargin,
+                    g5Width / 6 - 2 * delimMargin,
+                    fmaHeight - 2 * delimMargin,
+                ),
+                Qt.AlignHCenter | Qt.AlignVCenter,
+                hmode,
+            )
+
+        if int(self._apState) & 0x20:
+            vmode = "ALTS"
+        elif int(self._apState) & 0x400:
+            vmode = "GS"
+        else:
+            vmode = ""
+
+        self.qp.drawText(
+            QRectF(
+                g5Width * 5 / 6 + delimMargin,
+                delimMargin,
+                g5Width / 6 - 2 * delimMargin,
+                fmaHeight - 2 * delimMargin,
+            ),
+            Qt.AlignHCenter | Qt.AlignVCenter,
+            vmode,
+        )
+
+        self.qp.end()

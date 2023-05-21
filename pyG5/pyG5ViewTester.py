@@ -21,7 +21,7 @@ from PyQt5.QtWidgets import (
     QScrollArea,
 )
 
-from pyG5.pyG5View import pyG5DualStack, g5Width, g5Height, pyG5SecondaryWidget
+from pyG5.pyG5View import pyG5DualStackFMA, g5Width, g5Height, pyG5SecondaryWidget
 
 sliderWdith = 300
 
@@ -109,7 +109,7 @@ if __name__ == "__main__":
     vlayout.addWidget(secView)
 
     hlayout.addLayout(vlayout)
-    g5View = pyG5DualStack()
+    g5View = pyG5DualStackFMA()
     hlayout.addWidget(g5View)
 
     controls = [
@@ -155,6 +155,7 @@ if __name__ == "__main__":
         try:
             slider.valueChanged.connect(getattr(g5View.pyG5AI, control["name"]))
             slider.valueChanged.connect(getattr(g5View.pyG5HSI, control["name"]))
+            slider.valueChanged.connect(getattr(g5View.pyG5FMA, control["name"]))
             slider.valueChanged.connect(getattr(secView, control["name"]))
             print("Slider connected: {}".format(control["name"]))
         except Exception as inst:

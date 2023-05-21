@@ -50,6 +50,54 @@ class pyG5NetWorkManager(QObject):
         self.datarefs = [
             # ( dataref, frequency, unit, description, num decimals to display in formatted output )
             (
+                "sim/cockpit2/radios/indicators/nav_src_ref",
+                20,
+                "enum",
+                "NAV source",
+                0,
+                "_navSrc",
+            ),
+            (
+                "sim/cockpit/autopilot/altitude",
+                20,
+                "feet",
+                "AP altitude selected",
+                0,
+                "_apAltitude",
+            ),
+            (
+                "sim/cockpit/autopilot/vertical_velocity",
+                20,
+                "fpm",
+                "NAV source",
+                0,
+                "_apVS",
+            ),
+            (
+                "sim/cockpit/autopilot/airspeed",
+                20,
+                "kt",
+                "AP air speed",
+                0,
+                "_apAirSpeed",
+            ),
+            (
+                "sim/cockpit/autopilot/autopilot_mode",
+                20,
+                "enum",
+                "AP mode",
+                0,
+                "_apMode",
+            ),
+            (
+                "sim/cockpit/autopilot/autopilot_state",
+                20,
+                "enum",
+                "AP state",
+                0,
+                "_apState",
+            ),
+            (
                 "sim/flightmodel/controls/parkbrake",
                 1,
                 "onoff",
@@ -195,7 +243,7 @@ class pyG5NetWorkManager(QObject):
                 "_gpsvsens",
             ),
             (
-                "sim/cockpit/radios/",
+                "sim/cockpit/radios/nav_type[0]",
                 1,
                 "boolean",
                 "Avionics powered on",
@@ -587,7 +635,6 @@ class pyG5NetWorkManager(QObject):
 
         # let the screensaver activate
         if platform.machine() in "aarch64":
-
             os.system("xset s on")
             os.system("xset s 1")
 

@@ -31,7 +31,7 @@ from PyQt5.QtWidgets import (
 
 from PyQt5.Qt import QEvent
 from pyG5.pyG5Network import pyG5NetWorkManager
-from pyG5.pyG5View import pyG5DualStack, pyG5SecondaryWidget
+from pyG5.pyG5View import pyG5DualStackFMA, pyG5SecondaryWidget
 
 
 class pyG5App(QApplication):
@@ -92,6 +92,10 @@ class pyG5App(QApplication):
         )
         self.networkManager.drefUpdate.connect(
             self.mainWindow.pyG5DualStacked.pyG5HSI.drefHandler
+        )
+
+        self.networkManager.drefUpdate.connect(
+            self.mainWindow.pyG5DualStacked.pyG5FMA.drefHandler
         )
 
         # Show window
@@ -189,7 +193,7 @@ class pyG5MainWindow(QMainWindow):
         action.triggered.connect(self.close)
         self.addAction(action)
 
-        self.pyG5DualStacked = pyG5DualStack()
+        self.pyG5DualStacked = pyG5DualStackFMA()
 
         self.setCentralWidget(self.pyG5DualStacked)
 
