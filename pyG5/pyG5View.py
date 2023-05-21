@@ -6,7 +6,7 @@ Created on 6 Aug 2021.
 
 import logging
 
-from math import cos, radians, sin, sqrt, floor, ceil
+from math import cos, radians, sin, sqrt, floor
 from functools import wraps
 
 from PyQt5.QtCore import (
@@ -125,6 +125,8 @@ class pyG5Widget(QWidget):
 
         """property name, default value"""
         propertyList = [
+            ("altitudeHold", 0),
+            ("altitudeVNAV", 0),
             ("navSrc", 0),
             ("apAltitude", 0),
             ("apVS", 0),
@@ -2566,9 +2568,6 @@ class pyG5FMA(pyG5Widget):
 
     def paintEvent(self, event):
         """Paint the widget."""
-        diamondHeight = 14
-        diamondWidth = 14
-
         self.qp = QPainter(self)
 
         self.setPen(1, Qt.black)
@@ -2649,7 +2648,9 @@ class pyG5FMA(pyG5Widget):
             elif int(self._apState) & 0x800:
                 vmode = "GS"
             elif int(self._apState) & 0x4000:
-                vmode = "ALT {} ft".format(int(self._apAltitude))
+                vmode = "ALT {} ft".format(int(self._altitudeHold))
+            elif int(self._apState) & 0x40000:
+                vmode = "VPATH"
             else:
                 vmode = "PIT"
 
@@ -2660,7 +2661,7 @@ class pyG5FMA(pyG5Widget):
                     g5Width * 2 / 6 - 2 * delimMargin,
                     fmaHeight - 2 * delimMargin,
                 ),
-                Qt.AlignHCenter | Qt.AlignVCenter,
+                Qt.AlignLeft | Qt.AlignVCenter,
                 vmode,
             )
 
@@ -2688,19 +2689,23 @@ class pyG5FMA(pyG5Widget):
                 Qt.AlignHCenter | Qt.AlignVCenter,
                 hmode,
             )
-
-        if int(self._apState) & 0x20:
-            vmode = "ALTS"
-        elif int(self._apState) & 0x400:
-            vmode = "GS"
+        vmode = ""
+        if int(self._apState) & 0x20000:
+            vmode += " VPATH" if len(vmode) else "VPTH"
         else:
-            vmode = ""
+            if int(self._apState) & 0x20:
+                if self._altitudeVNAV > self._apAltitude:
+                    vmode += " ALTV" if len(vmode) else "ALTV"
+                else:
+                    vmode += " ALTS" if len(vmode) else "ALTS"
+        if int(self._apState) & 0x400:
+            vmode += " GS" if len(vmode) else "GS"
 
         self.qp.drawText(
             QRectF(
-                g5Width * 5 / 6 + delimMargin,
+                g5Width * 4 / 6 + delimMargin,
                 delimMargin,
-                g5Width / 6 - 2 * delimMargin,
+                g5Width * 2 / 6 - 2 * delimMargin,
                 fmaHeight - 2 * delimMargin,
             ),
             Qt.AlignHCenter | Qt.AlignVCenter,

@@ -50,6 +50,22 @@ class pyG5NetWorkManager(QObject):
         self.datarefs = [
             # ( dataref, frequency, unit, description, num decimals to display in formatted output )
             (
+                "sim/cockpit2/autopilot/altitude_hold_ft",
+                20,
+                "ft",
+                "Altitude Hold",
+                0,
+                "_altitudeHold",
+            ),
+            (
+                "sim/cockpit2/autopilot/altitude_vnav_ft",
+                20,
+                "ft",
+                "Altitude VNAV",
+                0,
+                "_altitudeVNAV",
+            ),
+            (
                 "sim/cockpit2/radios/indicators/nav_src_ref",
                 20,
                 "enum",
@@ -222,7 +238,7 @@ class pyG5NetWorkManager(QObject):
                 "sim/cockpit/radios/gps_cdi_sensitivity",
                 1,
                 "index",
-                "GPS HSI sensitivity mode",
+                "GPS Horizontal Situation Indicator sensitivity mode",
                 0,
                 "_gpshsisens",
             ),
