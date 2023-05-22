@@ -2168,7 +2168,7 @@ class pyG5AIWidget(pyG5Widget):
             )
 
             # extract lower digits
-            altLowerDigit = int("{:05d}".format(self._altitude)[3:5])
+            altLowerDigit = int("{:05d}".format(int(self._altitude))[3:5])
 
             # floor the last to digit to the closest multiple of 20
             altLowerDigitrounded = 20 * floor(altLowerDigit / 20)
@@ -2193,7 +2193,6 @@ class pyG5AIWidget(pyG5Widget):
                     else:
                         altArray.append((100 - tmp) % 100)
 
-                print(altArray)
 
             # define a clip rect to avoid overflowing the alt box
             self.qp.setClipRect(
@@ -2672,7 +2671,6 @@ class pyG5FMA(pyG5Widget):
             if int(self._hsiSource) == 2:
                 hmode = "GPS"
             elif int(self._hsiSource) == 1:
-                print("_nav2type source", self._nav2type)
                 hmode = "{}".format(self.getNavTypeString(self._nav2type, ""))
             elif int(self._hsiSource) == 0:
                 hmode = "{}".format(self.getNavTypeString(self._nav1type, ""))
