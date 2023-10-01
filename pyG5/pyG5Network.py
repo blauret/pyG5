@@ -11,11 +11,11 @@ import binascii
 import os
 from datetime import datetime as datetime_, timedelta
 
-from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal, QTimer
+from PyQt6.QtCore import QObject, pyqtSlot, pyqtSignal, QTimer
 
-from PyQt5.QtNetwork import QUdpSocket, QHostAddress, QAbstractSocket
+from PyQt6.QtNetwork import QUdpSocket, QHostAddress, QAbstractSocket
 
-from PyQt5 import QtGui
+from PyQt6 import QtGui
 
 
 class pyG5NetWorkManager(QObject):
@@ -629,7 +629,9 @@ class pyG5NetWorkManager(QObject):
         self.udpSock.stateChanged.connect(self.socketStateHandler)
 
         # bind the socket
-        self.udpSock.bind(QHostAddress.AnyIPv4, 0, QUdpSocket.ShareAddress)
+        self.udpSock.bind(
+            QHostAddress.SpecialAddress.AnyIPv4, 0, QUdpSocket.BindFlag.ShareAddress
+        )
 
     @pyqtSlot()
     def write_data_ref(self, path, data):
@@ -690,7 +692,7 @@ class pyG5NetWorkManager(QObject):
         """Socket State handler."""
         self.logger.info("socketStateHandler: {}".format(self.udpSock.state()))
 
-        if self.udpSock.state() == QAbstractSocket.BoundState:
+        if self.udpSock.state() == QAbstractSocket.SocketState.BoundState:
             self.logger.info("Started Multicast listenner")
             # instantiate the multicast listener
             self.listener = pyG5MulticastListener(self)
@@ -698,9 +700,11 @@ class pyG5NetWorkManager(QObject):
             # connect the multicast listenner to the connect function
             self.listener.xpInstance.connect(self.xplaneConnect)
 
-        elif self.udpSock.state() == QAbstractSocket.UnconnectedState:
+        elif self.udpSock.state() == QAbstractSocket.LocalSocketState.UnconnectedState:
             # socket got disconnected issue reconnection
-            self.udpSock.bind(QHostAddress.AnyIPv4, 0, QUdpSocket.ShareAddress)
+            self.udpSock.bind(
+                QHostAddress.SpecialAddress.AnyIPv4, 0, QUdpSocket.BindFlag.ShareAddress
+            )
 
     @pyqtSlot()
     def dataHandler(self):
@@ -776,7 +780,11 @@ class pyG5MulticastListener(QObject):
         self.udpSock.stateChanged.connect(self.stateChangedSlot)
         self.udpSock.readyRead.connect(self.udpData)
         self.udpSock.connected.connect(self.connectedSlot)
-        self.udpSock.bind(QHostAddress.AnyIPv4, self.XPPort, QUdpSocket.ShareAddress)
+        self.udpSock.bind(
+            QHostAddress.SpecialAddress.AnyIPv4,
+            self.XPPort,
+            QUdpSocket.BindFlag.ShareAddress,
+        )
         if not self.udpSock.joinMulticastGroup(self.XPAddr):
             logging.error("Failed to join multicast group")
 

@@ -9,7 +9,7 @@ import logging
 from math import cos, radians, sin, sqrt, floor
 from functools import wraps
 
-from PyQt5.QtCore import (
+from PyQt6.QtCore import (
     QLine,
     QPoint,
     QPointF,
@@ -19,7 +19,7 @@ from PyQt5.QtCore import (
     pyqtSlot,
     pyqtSignal,
 )
-from PyQt5.QtGui import (
+from PyQt6.QtGui import (
     QBrush,
     QPainter,
     QPolygonF,
@@ -27,7 +27,7 @@ from PyQt5.QtGui import (
     QLinearGradient,
     QRadialGradient,
 )
-from PyQt5.QtWidgets import (
+from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
 )
@@ -208,7 +208,7 @@ class pyG5Widget(QWidget):
             setattr(self, "_{}".format(prop[0]), prop[1])
             setattr(self, "{}".format(prop[0]), _make_setter(prop[0]))
 
-    def setPen(self, width, color, style=Qt.SolidLine):
+    def setPen(self, width, color, style=Qt.PenStyle.SolidLine):
         """Set the pen color and width."""
         pen = self.qp.pen()
         pen.setColor(color)
@@ -372,13 +372,13 @@ class pyG5SecondaryWidget(pyG5Widget):
     def mousePressEvent(self, event):
         """Mouse Pressed event overload."""
         if self._avionicson:
-            if self.xpdrRect.contains(event.pos()):
+            if self.xpdrRect.contains(event.position()):
                 self.xpdrKeyboard = not self.xpdrKeyboard
 
             else:
-                if self.xpdrkeyRect.contains(event.pos()):
+                if self.xpdrkeyRect.contains(event.position()):
                     for key in self.keyArea:
-                        if key[0].contains(event.pos()):
+                        if key[0].contains(event.position()):
                             # the input is a BCD value received as integer.
                             # First step is to turn it into a real integer
                             codestr = "{:04d}".format(int(self._xpdrCode))
@@ -399,7 +399,7 @@ class pyG5SecondaryWidget(pyG5Widget):
                             self.xpdrCodeSignal.emit(self._xpdrCode)
 
                     for key in self.keyCtrlArea:
-                        if key[0].contains(event.pos()):
+                        if key[0].contains(event.position()):
                             self.xpdrMode(key[2])
                             self.xpdrModeSignal.emit(key[2])
                             self.xpdrKeyboard = False
@@ -415,12 +415,12 @@ class pyG5SecondaryWidget(pyG5Widget):
         self.qp = QPainter(self)
 
         # Draw the background
-        self.setPen(1, Qt.black)
-        self.qp.setBrush(QBrush(Qt.black))
+        self.setPen(1, Qt.GlobalColor.black)
+        self.qp.setBrush(QBrush(Qt.GlobalColor.black))
         self.qp.drawRect(0, 0, secWidth, secHeight)
 
-        self.setPen(1, Qt.white)
-        self.qp.setBrush(QBrush(Qt.black))
+        self.setPen(1, Qt.GlobalColor.white)
+        self.qp.setBrush(QBrush(Qt.GlobalColor.black))
 
         # flaps settings
         flapXBase = 620
@@ -428,8 +428,8 @@ class pyG5SecondaryWidget(pyG5Widget):
         flapHeight = secHeight - 40
         flapWidth = 130
 
-        self.setPen(1, Qt.white)
-        self.qp.setBrush(QBrush(Qt.white))
+        self.setPen(1, Qt.GlobalColor.white)
+        self.qp.setBrush(QBrush(Qt.GlobalColor.white))
         font = self.qp.font()
         font.setPixelSize(30)
         font.setBold(True)
@@ -443,7 +443,7 @@ class pyG5SecondaryWidget(pyG5Widget):
                 flapWidth,
                 40,
             ),
-            Qt.AlignRight | Qt.AlignTop,
+            Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignTop,
             "FLAPS",
         )
 
@@ -460,17 +460,17 @@ class pyG5SecondaryWidget(pyG5Widget):
                     40,
                     40,
                 ),
-                Qt.AlignHCenter | Qt.AlignVCenter,
+                Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter,
                 "{:02d}°".format(10 * i),
             )
 
         # draw the indicator rectangle
-        self.qp.setBrush(QBrush(Qt.black))
+        self.qp.setBrush(QBrush(Qt.GlobalColor.black))
         self.qp.drawRect(flapXBase + 90, flapYBase + 40, 40, flapHeight - 40)
 
         # draw the indicator legend white
-        self.setPen(1, Qt.white)
-        self.qp.setBrush(QBrush(Qt.white))
+        self.setPen(1, Qt.GlobalColor.white)
+        self.qp.setBrush(QBrush(Qt.GlobalColor.white))
         rect = QRectF(
             flapXBase + 50,
             flapYBase + 40 + int((flapHeight - 40) / 3),
@@ -478,23 +478,29 @@ class pyG5SecondaryWidget(pyG5Widget):
             flapHeight - 40 - +int((flapHeight - 40) / 3),
         )
         self.qp.drawRect(rect)
-        self.setPen(1, Qt.black)
-        self.qp.setBrush(QBrush(Qt.black))
-        self.qp.drawText(rect, Qt.AlignHCenter | Qt.AlignVCenter, "8\n5")
+        self.setPen(1, Qt.GlobalColor.black)
+        self.qp.setBrush(QBrush(Qt.GlobalColor.black))
+        self.qp.drawText(
+            rect, Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter, "8\n5"
+        )
 
         # draw the indicator legend cyan
-        self.setPen(1, Qt.cyan)
-        self.qp.setBrush(QBrush(Qt.cyan))
+        self.setPen(1, Qt.GlobalColor.cyan)
+        self.qp.setBrush(QBrush(Qt.GlobalColor.cyan))
         rect = QRectF(
             flapXBase + 50, flapYBase + 40, 40, int((flapHeight - 40) / 3 + 20)
         )
         self.qp.drawRect(rect)
-        self.setPen(1, Qt.black)
-        self.qp.setBrush(QBrush(Qt.black))
-        self.qp.drawText(rect, Qt.AlignHCenter | Qt.AlignVCenter, "1\n1\n0")
+        self.setPen(1, Qt.GlobalColor.black)
+        self.qp.setBrush(QBrush(Qt.GlobalColor.black))
+        self.qp.drawText(
+            rect,
+            Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter,
+            "1\n1\n0",
+        )
 
-        self.setPen(1, Qt.white)
-        self.qp.setBrush(QBrush(Qt.white))
+        self.setPen(1, Qt.GlobalColor.white)
+        self.qp.setBrush(QBrush(Qt.GlobalColor.white))
 
         self.qp.drawPolygon(
             QPolygonF(
@@ -533,8 +539,8 @@ class pyG5SecondaryWidget(pyG5Widget):
         trimHeight = secHeight - 40
         trimWidth = 130
 
-        self.setPen(1, Qt.white)
-        self.qp.setBrush(QBrush(Qt.white))
+        self.setPen(1, Qt.GlobalColor.white)
+        self.qp.setBrush(QBrush(Qt.GlobalColor.white))
         font = self.qp.font()
         font.setPixelSize(30)
         font.setBold(True)
@@ -548,7 +554,7 @@ class pyG5SecondaryWidget(pyG5Widget):
                 90,
                 40,
             ),
-            Qt.AlignRight | Qt.AlignTop,
+            Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignTop,
             "TRIM",
         )
 
@@ -564,16 +570,16 @@ class pyG5SecondaryWidget(pyG5Widget):
                 80,
                 40,
             ),
-            Qt.AlignHCenter | Qt.AlignVCenter,
+            Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter,
             "Take-off",
         )
 
         # draw the indicator rectangle
-        self.qp.setBrush(QBrush(Qt.black))
+        self.qp.setBrush(QBrush(Qt.GlobalColor.black))
         self.qp.drawRect(trimXBase + 90, trimYBase + 40, 40, trimHeight - 40)
 
-        self.setPen(1, Qt.white)
-        self.qp.setBrush(QBrush(Qt.white))
+        self.setPen(1, Qt.GlobalColor.white)
+        self.qp.setBrush(QBrush(Qt.GlobalColor.white))
 
         trimShift = (trimHeight - 60) * (self._trims / 2 + 0.5)
 
@@ -598,20 +604,20 @@ class pyG5SecondaryWidget(pyG5Widget):
             self.qp.setFont(font)
 
             # draw the indicator rectangle
-            self.setPen(2, Qt.white)
-            self.qp.setBrush(QBrush(Qt.white))
+            self.setPen(2, Qt.GlobalColor.white)
+            self.qp.setBrush(QBrush(Qt.GlobalColor.white))
             self.qp.drawRect(self.xpdrRect)
 
-            self.setPen(1, Qt.black)
-            self.qp.setBrush(QBrush(Qt.black))
+            self.setPen(1, Qt.GlobalColor.black)
+            self.qp.setBrush(QBrush(Qt.GlobalColor.black))
             self.qp.drawText(
                 self.xpdrRect,
-                Qt.AlignHCenter | Qt.AlignVCenter,
+                Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter,
                 "XPDR",
             )
 
-            self.setPen(2, Qt.white)
-            self.qp.setBrush(QBrush(Qt.black))
+            self.setPen(2, Qt.GlobalColor.white)
+            self.qp.setBrush(QBrush(Qt.GlobalColor.black))
             rect = QRectF(
                 self.xpdrXbase + self.xpdrwidth,
                 self.xpdrYbase,
@@ -620,8 +626,8 @@ class pyG5SecondaryWidget(pyG5Widget):
             )
             self.qp.drawRect(rect)
 
-            self.setPen(1, Qt.white)
-            self.qp.setBrush(QBrush(Qt.white))
+            self.setPen(1, Qt.GlobalColor.white)
+            self.qp.setBrush(QBrush(Qt.GlobalColor.white))
 
             if int(self._xpdrMode) == 0:
                 xpdrMode = "OFF"
@@ -636,20 +642,20 @@ class pyG5SecondaryWidget(pyG5Widget):
 
             self.qp.drawText(
                 rect,
-                Qt.AlignHCenter | Qt.AlignVCenter,
+                Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter,
                 "{:04d} {}".format(int(self._xpdrCode), xpdrMode),
             )
 
         if self.xpdrKeyboard:
-            self.setPen(2, Qt.white)
-            self.qp.setBrush(QBrush(Qt.black))
+            self.setPen(2, Qt.GlobalColor.white)
+            self.qp.setBrush(QBrush(Qt.GlobalColor.black))
             self.qp.drawRect(self.xpdrkeyRect)
 
             for key in self.keyArea:
                 self.qp.drawEllipse(key[0])
                 self.qp.drawText(
                     key[0],
-                    Qt.AlignCenter,
+                    Qt.AlignmentFlag.AlignCenter,
                     "{:01d}".format(key[1]),
                 )
 
@@ -657,7 +663,7 @@ class pyG5SecondaryWidget(pyG5Widget):
                 self.qp.drawRect(key[0])
                 self.qp.drawText(
                     key[0],
-                    Qt.AlignCenter,
+                    Qt.AlignmentFlag.AlignCenter,
                     key[1],
                 )
 
@@ -677,15 +683,15 @@ class pyG5SecondaryWidget(pyG5Widget):
 
             self.qp.drawText(
                 rect,
-                Qt.AlignHCenter | Qt.AlignVCenter,
+                Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter,
                 "CARB",
             )
 
-            self.setPen(2, Qt.white)
+            self.setPen(2, Qt.GlobalColor.white)
             if self._carbheat > 0.1:
-                self.qp.setBrush(QBrush(Qt.green))
+                self.qp.setBrush(QBrush(Qt.GlobalColor.green))
             else:
-                self.qp.setBrush(QBrush(Qt.black))
+                self.qp.setBrush(QBrush(Qt.GlobalColor.black))
 
             rect = QRectF(carbXbase, carbYbase + 40, carbwidth, carbheight)
 
@@ -706,19 +712,19 @@ class pyG5SecondaryWidget(pyG5Widget):
 
             self.qp.drawText(
                 rect,
-                Qt.AlignHCenter | Qt.AlignVCenter,
+                Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter,
                 "FUEL\nPUMP",
             )
 
-            self.setPen(2, Qt.white)
-            self.qp.setBrush(QBrush(Qt.green))
+            self.setPen(2, Qt.GlobalColor.white)
+            self.qp.setBrush(QBrush(Qt.GlobalColor.green))
 
             rect = QRectF(fuelXbase, fuelYbase + 80, fuelwidth, fuelheight)
 
             if self._fuelpump > 0 and self._avionicson:
-                self.qp.setBrush(QBrush(Qt.green))
+                self.qp.setBrush(QBrush(Qt.GlobalColor.green))
             else:
-                self.qp.setBrush(QBrush(Qt.black))
+                self.qp.setBrush(QBrush(Qt.GlobalColor.black))
 
             self.qp.drawEllipse(rect)
 
@@ -730,41 +736,41 @@ class pyG5SecondaryWidget(pyG5Widget):
             ffWdidth = 440 - ffXBase
             ffHeight = 220
 
-            self.setPen(1, Qt.white)
-            self.qp.setBrush(QBrush(Qt.white))
+            self.setPen(1, Qt.GlobalColor.white)
+            self.qp.setBrush(QBrush(Qt.GlobalColor.white))
             rect = QRectF(ffXBase, carbYbase, ffWdidth, 20)
             self.qp.drawText(
                 rect,
-                Qt.AlignHCenter | Qt.AlignVCenter,
+                Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter,
                 "FUEL FEED",
             )
 
-            self.setPen(1, Qt.white)
-            self.qp.setBrush(QBrush(Qt.black))
+            self.setPen(1, Qt.GlobalColor.white)
+            self.qp.setBrush(QBrush(Qt.GlobalColor.black))
 
             rect = QRectF(ffXBase, ffYBase, ffWdidth, ffHeight)
             self.qp.drawRect(rect)
 
             self.qp.drawText(
                 rect,
-                Qt.AlignHCenter | Qt.AlignTop,
+                Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop,
                 "BOTH",
             )
             self.qp.drawText(
                 rect,
-                Qt.AlignHCenter | Qt.AlignBottom,
+                Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignBottom,
                 "OFF",
             )
 
             self.qp.drawText(
                 rect,
-                Qt.AlignLeft | Qt.AlignVCenter,
+                Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
                 "LEFT",
             )
 
             self.qp.drawText(
                 rect,
-                Qt.AlignRight | Qt.AlignVCenter,
+                Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
                 "RIGHT",
             )
 
@@ -786,8 +792,8 @@ class pyG5SecondaryWidget(pyG5Widget):
             brect = QRectF(-50, -50, 100, 100)
             self.qp.drawEllipse(brect)
 
-            self.setPen(1, Qt.white)
-            self.qp.setBrush(QBrush(Qt.white))
+            self.setPen(1, Qt.GlobalColor.white)
+            self.qp.setBrush(QBrush(Qt.GlobalColor.white))
             self.qp.drawPolygon(
                 QPolygonF(
                     [
@@ -800,8 +806,8 @@ class pyG5SecondaryWidget(pyG5Widget):
                 )
             )
 
-            self.setPen(1, Qt.black)
-            self.qp.setBrush(QBrush(Qt.black))
+            self.setPen(1, Qt.GlobalColor.black)
+            self.qp.setBrush(QBrush(Qt.GlobalColor.black))
             brect = QRectF(-5, -5, 10, 10)
             self.qp.drawEllipse(brect)
 
@@ -815,17 +821,29 @@ class pyG5SecondaryWidget(pyG5Widget):
             advHeight = 100
 
             advTable = [
-                {"text": "LOW\nVOLTS", "color": Qt.red, "name": "_lowVolts"},
-                {"text": "LOW\nFUEL", "color": Qt.red, "name": "_lowFuel"},
-                {"text": "OIL\nPRESS", "color": Qt.red, "name": "_oilPres"},
-                {"text": "BRAKE", "color": Qt.red, "name": "_parkBrake"},
-                {"text": "LOW\nVACUUM", "color": Qt.yellow, "name": "_lowVacuum"},
-                {"text": "FUEL\nPRESS", "color": Qt.yellow, "name": "_fuelPress"},
+                {
+                    "text": "LOW\nVOLTS",
+                    "color": Qt.GlobalColor.red,
+                    "name": "_lowVolts",
+                },
+                {"text": "LOW\nFUEL", "color": Qt.GlobalColor.red, "name": "_lowFuel"},
+                {"text": "OIL\nPRESS", "color": Qt.GlobalColor.red, "name": "_oilPres"},
+                {"text": "BRAKE", "color": Qt.GlobalColor.red, "name": "_parkBrake"},
+                {
+                    "text": "LOW\nVACUUM",
+                    "color": Qt.GlobalColor.yellow,
+                    "name": "_lowVacuum",
+                },
+                {
+                    "text": "FUEL\nPRESS",
+                    "color": Qt.GlobalColor.yellow,
+                    "name": "_fuelPress",
+                },
             ]
 
             grayColor = QColor("#5d5b59")
             self.setPen(1, grayColor)
-            self.qp.setBrush(QBrush(Qt.black))
+            self.qp.setBrush(QBrush(Qt.GlobalColor.black))
 
             rect = QRectF(advXBase, advYBase, advWdidth, advHeight)
             self.qp.drawRect(rect)
@@ -846,7 +864,8 @@ class pyG5SecondaryWidget(pyG5Widget):
 
                         self.qp.drawText(
                             advrect,
-                            Qt.AlignHCenter | Qt.AlignVCenter,
+                            Qt.AlignmentFlag.AlignHCenter
+                            | Qt.AlignmentFlag.AlignVCenter,
                             advTable[4 * i + j]["text"],
                         )
 
@@ -889,12 +908,12 @@ class pyG5HSIWidget(pyG5Widget):
         self.qp.setFont(font)
 
         # Draw the background
-        self.setPen(1, Qt.black)
-        self.qp.setBrush(QBrush(Qt.black))
+        self.setPen(1, Qt.GlobalColor.black)
+        self.qp.setBrush(QBrush(Qt.GlobalColor.black))
         self.qp.drawRect(0, 0, g5Width, g5Height)
 
         if self._avionicson == 0:
-            self.setPen(1, Qt.white)
+            self.setPen(1, Qt.GlobalColor.white)
             self.qp.drawLine(0, 0, g5Width, g5Height)
             self.qp.drawLine(0, g5Height, g5Width, 0)
             self.qp.end()
@@ -924,7 +943,7 @@ class pyG5HSIWidget(pyG5Widget):
             270,
             315,
         ]
-        self.setPen(2, Qt.white)
+        self.setPen(2, Qt.GlobalColor.white)
 
         for marker in hsiPeripheralMarkers:
             self.qp.rotate(-marker)
@@ -971,7 +990,7 @@ class pyG5HSIWidget(pyG5Widget):
                         self.qp.font().pixelSize() + 6,
                         self.qp.font().pixelSize(),
                     ),
-                    Qt.AlignHCenter | Qt.AlignVCenter,
+                    Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter,
                     text,
                 )
                 self.qp.rotate(-self._magHeading + currentHead)
@@ -981,8 +1000,8 @@ class pyG5HSIWidget(pyG5Widget):
             currentHead += 5
 
         # draw the Heading bug
-        self.setPen(1, Qt.cyan)
-        self.qp.setBrush(QBrush(Qt.cyan))
+        self.setPen(1, Qt.GlobalColor.cyan)
+        self.qp.setBrush(QBrush(Qt.GlobalColor.cyan))
 
         self.qp.rotate(180 + self._headingBug)
 
@@ -1000,7 +1019,7 @@ class pyG5HSIWidget(pyG5Widget):
             )
         )
 
-        self.setPen(1, Qt.black)
+        self.setPen(1, Qt.GlobalColor.black)
         gpscdianonciator = ""
         if int(self._hsiSource) == 2:
             cdiSource = "GPS"
@@ -1024,10 +1043,10 @@ class pyG5HSIWidget(pyG5Widget):
             ]
             try:
                 gpscdianonciator = tableMap[int(self._gpshsisens)]
-            except:
+            except IndexError:
                 gpscdianonciator = tableMap[-1]
 
-            navColor = Qt.magenta
+            navColor = Qt.GlobalColor.magenta
             navdft = self._gpsdft
             navfromto = self._gpsfromto
             navcrs = self._gpscrs
@@ -1038,7 +1057,7 @@ class pyG5HSIWidget(pyG5Widget):
             gsDev = self._gpsgs
         elif int(self._hsiSource) == 1:
             cdiSource = "{}".format(self.getNavTypeString(self._nav2type, "2"))
-            navColor = Qt.green
+            navColor = Qt.GlobalColor.green
             navdft = self._nav2dft
             navfromto = self._nav2fromto
             navcrs = self._nav2crs
@@ -1046,7 +1065,7 @@ class pyG5HSIWidget(pyG5Widget):
             gsDev = self._nav2gs
         else:
             cdiSource = "{}".format(self.getNavTypeString(self._nav1type, "1"))
-            navColor = Qt.green
+            navColor = Qt.GlobalColor.green
             navdft = self._nav1dft
             navfromto = self._nav1fromto
             navcrs = self._nav1crs
@@ -1119,8 +1138,8 @@ class pyG5HSIWidget(pyG5Widget):
 
         self.qp.rotate(90)
         # CDI deflection circle
-        self.setPen(2, Qt.white)
-        self.qp.setBrush(QBrush(Qt.black))
+        self.setPen(2, Qt.GlobalColor.white)
+        self.qp.setBrush(QBrush(Qt.GlobalColor.black))
 
         for i in [-81, -41, 31, 69]:
             self.qp.drawArc(
@@ -1141,34 +1160,34 @@ class pyG5HSIWidget(pyG5Widget):
         font.setBold(False)
         self.qp.setFont(font)
         if int(self._hsiSource) == 2:
-            self.setPen(2, Qt.magenta)
+            self.setPen(2, Qt.GlobalColor.magenta)
         else:
-            self.setPen(2, Qt.green)
+            self.setPen(2, Qt.GlobalColor.green)
 
         self.qp.drawText(
             QRectF(g5CenterX - 70, hsiCenter - 50, 65, 18),
-            Qt.AlignLeft | Qt.AlignVCenter,
+            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
             cdiSource,
         )
 
         if len(gpscdianonciator):
             self.qp.drawText(
                 QRectF(g5CenterX + 25, hsiCenter - 50, 65, 18),
-                Qt.AlignLeft | Qt.AlignVCenter,
+                Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
                 gpscdianonciator,
             )
 
         # Draw the heading Bug indicator bottom corner
-        self.setPen(2, Qt.cyan)
-        self.qp.setBrush(QBrush(Qt.black))
+        self.setPen(2, Qt.GlobalColor.cyan)
+        self.qp.setBrush(QBrush(Qt.GlobalColor.black))
 
         headingWidth = 105
         headingHeigth = 30
         self.qp.drawRect(QRectF(g5Width, g5Height, -headingWidth, -headingHeigth))
 
         # draw the bug symbol
-        self.setPen(1, Qt.cyan)
-        self.qp.setBrush(QBrush(Qt.cyan))
+        self.setPen(1, Qt.GlobalColor.cyan)
+        self.qp.setBrush(QBrush(Qt.GlobalColor.cyan))
 
         self.qp.drawPolygon(
             QPolygonF(
@@ -1187,7 +1206,7 @@ class pyG5HSIWidget(pyG5Widget):
 
         self.qp.drawText(
             QRectF(412, 336, 65, 18),
-            Qt.AlignLeft | Qt.AlignVCenter,
+            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
             "{:03d}˚".format(int(self._headingBug)),
         )
 
@@ -1199,12 +1218,12 @@ class pyG5HSIWidget(pyG5Widget):
             distRect = QRectF(g5Width - 105, 0, 105, 45)
 
             self.setPen(2, greyColor)
-            self.qp.setBrush(QBrush(Qt.black))
+            self.qp.setBrush(QBrush(Qt.GlobalColor.black))
             self.qp.drawRect(distRect)
 
             self.qp.drawText(
                 distRect,
-                Qt.AlignHCenter | Qt.AlignTop,
+                Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop,
                 "Dist NM",
             )
 
@@ -1216,7 +1235,7 @@ class pyG5HSIWidget(pyG5Widget):
             distRect = QRectF(g5Width - 105, 12, 105, 45 - 12)
             self.qp.drawText(
                 distRect,
-                Qt.AlignCenter,
+                Qt.AlignmentFlag.AlignCenter,
                 "{}".format(round(self._gpsdmedist, 1)),
             )
 
@@ -1228,12 +1247,12 @@ class pyG5HSIWidget(pyG5Widget):
 
         # draw the wind box
         self.setPen(2, greyColor)
-        self.qp.setBrush(QBrush(Qt.black))
+        self.qp.setBrush(QBrush(Qt.GlobalColor.black))
 
         self.qp.drawRect(0, 0, 105, 45)
 
-        self.setPen(1, Qt.white)
-        self.qp.setBrush(QBrush(Qt.white))
+        self.setPen(1, Qt.GlobalColor.white)
+        self.qp.setBrush(QBrush(Qt.GlobalColor.white))
 
         self.qp.translate(25, 25)
 
@@ -1257,19 +1276,19 @@ class pyG5HSIWidget(pyG5Widget):
 
         self.qp.drawText(
             QRectF(50, 2, 50, 20),
-            Qt.AlignLeft | Qt.AlignVCenter,
+            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
             "{:03d}˚".format(int(self._windDirection)),
         )
 
         self.qp.drawText(
             QRectF(50, 22, 50, 20),
-            Qt.AlignLeft | Qt.AlignVCenter,
+            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
             "{:02d}kt".format(int(self._windSpeed * mstokt)),
         )
 
         # Draw the magnetic heading box
         self.setPen(2, greyColor)
-        self.qp.setBrush(QBrush(Qt.black))
+        self.qp.setBrush(QBrush(Qt.GlobalColor.black))
         self.qp.drawPolygon(
             QPolygonF(
                 [
@@ -1288,13 +1307,13 @@ class pyG5HSIWidget(pyG5Widget):
             QRectF(
                 g5CenterX - headingBoxWidth / 2, 1, headingBoxWidth, headingBoxHeight
             ),
-            Qt.AlignHCenter | Qt.AlignVCenter,
+            Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter,
             "{:03d}˚".format(int(self._magHeading)),
         )
 
         # Draw the ground track
-        self.setPen(0, Qt.transparent)
-        self.qp.setBrush(QBrush(Qt.magenta))
+        self.setPen(0, Qt.GlobalColor.transparent)
+        self.qp.setBrush(QBrush(Qt.GlobalColor.magenta))
         self.qp.translate(g5CenterX, hsiCenter)
         self.qp.rotate(-self._magHeading + self._groundTrack)
         self.qp.drawPolygon(
@@ -1312,13 +1331,13 @@ class pyG5HSIWidget(pyG5Widget):
                 ]
             )
         )
-        self.setPen(3, greyColor, Qt.DashLine)
+        self.setPen(3, greyColor, Qt.PenStyle.DashLine)
         self.qp.drawLine(0, 0, 0, -rotatinghsiCircleRadius)
         self.qp.resetTransform()
 
         # draw the aircraft
-        self.setPen(1, Qt.white)
-        self.qp.setBrush(QBrush(Qt.white))
+        self.setPen(1, Qt.GlobalColor.white)
+        self.qp.setBrush(QBrush(Qt.GlobalColor.white))
 
         self.qp.drawPolygon(
             QPolygonF(
@@ -1371,12 +1390,12 @@ class pyG5HSIWidget(pyG5Widget):
 
             self.qp.drawText(
                 rect,
-                Qt.AlignCenter | Qt.AlignVCenter,
+                Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter,
                 vertSourceTxt,
             )
 
             self.setPen(2, greyColor)
-            self.qp.setBrush(QBrush(Qt.transparent))
+            self.qp.setBrush(QBrush(Qt.GlobalColor.transparent))
 
             self.qp.drawRect(rect)
 
@@ -1399,7 +1418,7 @@ class pyG5HSIWidget(pyG5Widget):
 
             for offset in [-70, -35, 35, 70]:
                 self.qp.drawEllipse(
-                    QPoint(
+                    QPointF(
                         int(g5Width - gsFromLeft - gsWidth / 2),
                         int(hsiCenter + offset),
                     ),
@@ -1407,7 +1426,7 @@ class pyG5HSIWidget(pyG5Widget):
                     gsCircleRad / 2,
                 )
 
-            self.setPen(1, Qt.black)
+            self.setPen(1, Qt.GlobalColor.black)
             self.qp.setBrush(QBrush(navColor))
 
             self.qp.translate(
@@ -1432,30 +1451,34 @@ class pyG5HSIWidget(pyG5Widget):
         crsBoxWidth = 105
 
         self.setPen(2, greyColor)
-        self.qp.setBrush(QBrush(Qt.black))
+        self.qp.setBrush(QBrush(Qt.GlobalColor.black))
 
         rect = QRectF(0, g5Height - crsBoxHeight, crsBoxWidth, crsBoxHeight)
         self.qp.drawRect(rect)
 
-        self.setPen(1, Qt.white)
+        self.setPen(1, Qt.GlobalColor.white)
 
         font = self.qp.font()
         font.setPixelSize(15)
         self.qp.setFont(font)
 
         rect = QRectF(1, g5Height - crsBoxHeight + 1, crsBoxWidth - 2, crsBoxHeight - 2)
-        self.qp.drawText(rect, Qt.AlignLeft | Qt.AlignBottom, "CRS")
+        self.qp.drawText(
+            rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignBottom, "CRS"
+        )
 
         font = self.qp.font()
         font.setPixelSize(25)
         self.qp.setFont(font)
         if int(self._hsiSource) == 2:
-            self.setPen(1, Qt.magenta)
+            self.setPen(1, Qt.GlobalColor.magenta)
         else:
-            self.setPen(1, Qt.green)
+            self.setPen(1, Qt.GlobalColor.green)
         rect = QRectF(40, g5Height - crsBoxHeight + 1, 65, crsBoxHeight - 2)
         self.qp.drawText(
-            rect, Qt.AlignLeft | Qt.AlignVCenter, "{:03d}˚".format(int(navcrs))
+            rect,
+            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
+            "{:03d}˚".format(int(navcrs)),
         )
 
         self.qp.end()
@@ -1487,10 +1510,10 @@ class pyG5AIWidget(pyG5Widget):
         self.qp = QPainter(self)
 
         if self._avionicson == 0:
-            self.setPen(1, Qt.black)
-            self.qp.setBrush(QBrush(Qt.black))
+            self.setPen(1, Qt.GlobalColor.black)
+            self.qp.setBrush(QBrush(Qt.GlobalColor.black))
             self.qp.drawRect(0, 0, g5Width, g5Height)
-            self.setPen(1, Qt.white)
+            self.setPen(1, Qt.GlobalColor.white)
             self.qp.drawLine(0, 0, g5Width, g5Height)
             self.qp.drawLine(0, g5Height, g5Width, 0)
             self.qp.end()
@@ -1502,7 +1525,7 @@ class pyG5AIWidget(pyG5Widget):
         font.setBold(True)
         self.qp.setFont(font)
 
-        self.setPen(1, Qt.white)
+        self.setPen(1, Qt.GlobalColor.white)
         grad = QLinearGradient(g5CenterX, g5Height, g5CenterX, 0)
         grad.setColorAt(1, QColor(0, 50, 200, 255))
         grad.setColorAt(0, QColor(0, 255, 255, 255))
@@ -1592,7 +1615,7 @@ class pyG5AIWidget(pyG5Widget):
             mode = (mode + 1) % 4
 
         # draw the static roll arc
-        self.setPen(3, Qt.white)
+        self.setPen(3, Qt.GlobalColor.white)
 
         bondingRect = QRectF(
             -self.rollArcRadius,
@@ -1616,12 +1639,12 @@ class pyG5AIWidget(pyG5Widget):
             [-120, 10],
         ]
 
-        self.qp.setBrush(QBrush(Qt.white))
-        self.setPen(2, Qt.white)
+        self.qp.setBrush(QBrush(Qt.GlobalColor.white))
+        self.setPen(2, Qt.GlobalColor.white)
         for lineParam in rollangleindicator:
             self.qp.drawLine(self.alongRadiusCoord(lineParam[0], lineParam[1]))
 
-        self.setPen(1, Qt.white)
+        self.setPen(1, Qt.GlobalColor.white)
         # draw the diamond on top of the roll arc
         self.qp.drawPolygon(
             QPolygonF(
@@ -1657,10 +1680,10 @@ class pyG5AIWidget(pyG5Widget):
         self.qp.drawPolygon(fixedDiamond)
 
         # create the nose
-        self.qp.setBrush(QBrush(Qt.yellow))
-        self.qp.setBackgroundMode(Qt.OpaqueMode)
+        self.qp.setBrush(QBrush(Qt.GlobalColor.yellow))
+        self.qp.setBackgroundMode(Qt.BGMode.OpaqueMode)
 
-        self.setPen(1, Qt.black)
+        self.setPen(1, Qt.GlobalColor.black)
 
         # solid polygon left
         nose = QPolygonF(
@@ -1729,7 +1752,7 @@ class pyG5AIWidget(pyG5Widget):
         )
         self.qp.drawPolygon(nose)
 
-        self.setPen(0, Qt.transparent)
+        self.setPen(0, Qt.GlobalColor.transparent)
         # solid polygon right
         nose = QPolygonF(
             [
@@ -1764,13 +1787,13 @@ class pyG5AIWidget(pyG5Widget):
 
         tapeScale = 50
 
-        self.setPen(0, Qt.transparent)
+        self.setPen(0, Qt.GlobalColor.transparent)
 
         self.qp.setBrush(QBrush(QColor(0, 0, 0, 90)))
         self.qp.drawRect(QRectF(0, 0, speedBoxLeftAlign + speedBoxWdith + 15, g5Height))
 
         if (self._kias + tapeScale / 2) > self._vne:
-            brush = QBrush(QColor(Qt.red))
+            brush = QBrush(QColor(Qt.GlobalColor.red))
             self.qp.setBrush(brush)
 
             self.qp.drawRect(
@@ -1783,7 +1806,7 @@ class pyG5AIWidget(pyG5Widget):
             )
 
         if (self._kias + tapeScale / 2) > self._vno:
-            brush = QBrush(QColor(Qt.yellow))
+            brush = QBrush(QColor(Qt.GlobalColor.yellow))
             self.qp.setBrush(brush)
 
             self.qp.drawRect(
@@ -1796,7 +1819,7 @@ class pyG5AIWidget(pyG5Widget):
             )
 
         if (self._kias + tapeScale / 2) > self._vs:
-            brush = QBrush(QColor(Qt.green))
+            brush = QBrush(QColor(Qt.GlobalColor.green))
             self.qp.setBrush(brush)
             self.qp.drawRect(
                 QRectF(
@@ -1808,7 +1831,7 @@ class pyG5AIWidget(pyG5Widget):
             )
 
         if (self._kias + tapeScale / 2) > self._vs:
-            brush = QBrush(QColor(Qt.white))
+            brush = QBrush(QColor(Qt.GlobalColor.white))
             self.qp.setBrush(brush)
             self.qp.drawRect(
                 QRectF(
@@ -1819,9 +1842,9 @@ class pyG5AIWidget(pyG5Widget):
                 )
             )
 
-        self.setPen(2, Qt.white)
+        self.setPen(2, Qt.GlobalColor.white)
 
-        self.qp.setBackgroundMode(Qt.TransparentMode)
+        self.qp.setBackgroundMode(Qt.BGMode.TransparentMode)
         font = self.qp.font()
         font.setPixelSize(speedBoxHeight - 15)
 
@@ -1846,7 +1869,7 @@ class pyG5AIWidget(pyG5Widget):
                         speedBoxWdith,
                         speedBoxHeight,
                     ),
-                    Qt.AlignRight | Qt.AlignVCenter,
+                    Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
                     "{:d}".format(int(currentTape)),
                 )
 
@@ -1889,7 +1912,7 @@ class pyG5AIWidget(pyG5Widget):
             ]
         )
 
-        self.setPen(2, Qt.white)
+        self.setPen(2, Qt.GlobalColor.white)
 
         brush = QBrush(QColor(0, 0, 0, 255))
         self.qp.setBrush(brush)
@@ -1908,7 +1931,7 @@ class pyG5AIWidget(pyG5Widget):
                 speedBoxWdith,
                 speedBoxHeight,
             ),
-            Qt.AlignHCenter | Qt.AlignVCenter,
+            Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter,
             "{:03d}".format(int(self._kias)),
         )
 
@@ -1928,7 +1951,7 @@ class pyG5AIWidget(pyG5Widget):
 
         self.qp.drawText(
             rect,
-            Qt.AlignHCenter | Qt.AlignVCenter,
+            Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter,
             "TAS {:03d} kt".format(int(self._ktas)),
         )
 
@@ -1940,19 +1963,21 @@ class pyG5AIWidget(pyG5Widget):
             tasHeight,
         )
         self.qp.drawRect(rect)
-        self.qp.drawText(rect, Qt.AlignLeft | Qt.AlignVCenter, "GS")
+        self.qp.drawText(
+            rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, "GS"
+        )
 
-        self.setPen(2, Qt.magenta)
+        self.setPen(2, Qt.GlobalColor.magenta)
 
         self.qp.drawText(
             rect,
-            Qt.AlignRight | Qt.AlignVCenter,
+            Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
             "{:03d} kt".format(int(self._gs * mstokt)),
         )
 
-        self.setPen(1, Qt.magenta)
+        self.setPen(1, Qt.GlobalColor.magenta)
 
-        brush = QBrush(Qt.magenta)
+        brush = QBrush(Qt.GlobalColor.magenta)
         self.qp.setBrush(brush)
 
         self.qp.drawRect(
@@ -1980,14 +2005,14 @@ class pyG5AIWidget(pyG5Widget):
         vsIndicatorWidth = 7
 
         alttapteLeftBound = altTapeLeftAlign - 1.5 * altBoxSpikedimension
-        self.setPen(0, Qt.transparent)
+        self.setPen(0, Qt.GlobalColor.transparent)
         self.qp.setBrush(QBrush(QColor(0, 0, 0, 90)))
         self.qp.drawRect(
             QRectF(alttapteLeftBound, 0, g5Width - alttapteLeftBound, int(g5Height))
         )
-        self.setPen(2, Qt.white)
+        self.setPen(2, Qt.GlobalColor.white)
 
-        self.qp.setBackgroundMode(Qt.TransparentMode)
+        self.qp.setBackgroundMode(Qt.BGMode.TransparentMode)
         font = self.qp.font()
         font.setPixelSize(10)
         # set default font size
@@ -2010,7 +2035,7 @@ class pyG5AIWidget(pyG5Widget):
                         15,
                         vsIndicatorWidth + 3,
                     ),
-                    Qt.AlignRight | Qt.AlignVCenter,
+                    Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
                     "{:d}".format(abs(int(currentTape - vsScale / 2))),
                 )
             else:
@@ -2024,14 +2049,14 @@ class pyG5AIWidget(pyG5Widget):
         vsHeight = -self._vh_ind_fpm / 100 / vsScale * g5Height
         vsRect = QRectF(g5Width, g5CenterY, -vsIndicatorWidth, vsHeight)
 
-        self.setPen(0, Qt.transparent)
+        self.setPen(0, Qt.GlobalColor.transparent)
 
-        brush = QBrush(QColor(Qt.magenta))
+        brush = QBrush(QColor(Qt.GlobalColor.magenta))
         self.qp.setBrush(brush)
 
         self.qp.drawRect(vsRect)
 
-        self.setPen(2, Qt.white)
+        self.setPen(2, Qt.GlobalColor.white)
 
         font = self.qp.font()
         font.setPixelSize(20)
@@ -2058,7 +2083,7 @@ class pyG5AIWidget(pyG5Widget):
                             speedBoxWdith,
                             speedBoxHeight,
                         ),
-                        Qt.AlignLeft | Qt.AlignVCenter,
+                        Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
                         "{:d}".format(int(currentTape)),
                     )
 
@@ -2066,10 +2091,10 @@ class pyG5AIWidget(pyG5Widget):
 
         # altitude selector
         pen = self.qp.pen()
-        pen.setColor(Qt.cyan)
+        pen.setColor(Qt.GlobalColor.cyan)
         pen.setWidth(2)
         self.qp.setPen(pen)
-        brush = QBrush(QColor(Qt.cyan))
+        brush = QBrush(QColor(Qt.GlobalColor.cyan))
         self.qp.setBrush(brush)
 
         altSelCenter = g5CenterY
@@ -2098,7 +2123,7 @@ class pyG5AIWidget(pyG5Widget):
         self.qp.drawPolygon(altSel)
 
         # Altitude Box
-        self.setPen(2, Qt.white)
+        self.setPen(2, Qt.GlobalColor.white)
         altBoxTextSplitRatio = 2 / 5
         altBox = QPolygonF(
             [
@@ -2163,7 +2188,7 @@ class pyG5AIWidget(pyG5Widget):
 
             self.qp.drawText(
                 dispRect,
-                Qt.AlignHCenter | Qt.AlignVCenter,
+                Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter,
                 "-",
             )
 
@@ -2193,7 +2218,6 @@ class pyG5AIWidget(pyG5Widget):
                     else:
                         altArray.append((100 - tmp) % 100)
 
-
             # define a clip rect to avoid overflowing the alt box
             self.qp.setClipRect(
                 QRectF(
@@ -2214,7 +2238,7 @@ class pyG5AIWidget(pyG5Widget):
                     altBoxWdith * altBoxTextSplitRatio,
                     4 * altBoxHeight,
                 ),
-                Qt.AlignHCenter | Qt.AlignVCenter,
+                Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter,
                 "\n".join("{:02d}".format(t) for t in altArray),
             )
 
@@ -2266,7 +2290,7 @@ class pyG5AIWidget(pyG5Widget):
                             charWidth,
                             60,
                         ),
-                        Qt.AlignHCenter | Qt.AlignTop,
+                        Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop,
                         "{:01d}\n{}".format((int(altString[0]) + 1) % 10, altString[0])
                         if self._altitude >= 10000
                         else "{:01d}\n ".format((int(altString[0]) + 1) % 10),
@@ -2277,7 +2301,7 @@ class pyG5AIWidget(pyG5Widget):
                 else:
                     self.qp.drawText(
                         dispRect,
-                        Qt.AlignHCenter | Qt.AlignVCenter,
+                        Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter,
                         altString[0] if self._altitude >= 10000 else "",
                     )
 
@@ -2302,7 +2326,7 @@ class pyG5AIWidget(pyG5Widget):
                             charWidth,
                             60,
                         ),
-                        Qt.AlignHCenter | Qt.AlignTop,
+                        Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop,
                         "{:01d}\n{}".format((int(altString[1]) + 1) % 10, altString[1])
                         if self._altitude >= 1000
                         else "{:01d}\n ".format((int(altString[1]) + 1) % 10),
@@ -2313,7 +2337,7 @@ class pyG5AIWidget(pyG5Widget):
                 else:
                     self.qp.drawText(
                         dispRect,
-                        Qt.AlignHCenter | Qt.AlignVCenter,
+                        Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter,
                         altString[1] if self._altitude >= 1000 else "",
                     )
                     pass
@@ -2338,13 +2362,15 @@ class pyG5AIWidget(pyG5Widget):
                         charWidth,
                         60,
                     ),
-                    Qt.AlignHCenter | Qt.AlignTop,
+                    Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop,
                     "{:01d}\n{}".format((int(altString[2]) + 1) % 10, altString[2]),
                 )
                 self.qp.setClipRect(0, 0, g5Width, g5Height)
             else:
                 self.qp.drawText(
-                    dispRect, Qt.AlignHCenter | Qt.AlignVCenter, altString[2]
+                    dispRect,
+                    Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter,
+                    altString[2],
                 )
 
             # define a clip rect to avoid overflowing the alt box
@@ -2367,7 +2393,7 @@ class pyG5AIWidget(pyG5Widget):
                     altBoxWdith * altBoxTextSplitRatio,
                     4 * altBoxHeight,
                 ),
-                Qt.AlignHCenter | Qt.AlignVCenter,
+                Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter,
                 "\n".join("{:02d}".format(t) for t in altArray),
             )
 
@@ -2376,7 +2402,7 @@ class pyG5AIWidget(pyG5Widget):
 
         # draw the altimeter setting
         pen = self.qp.pen()
-        pen.setColor(Qt.cyan)
+        pen.setColor(Qt.GlobalColor.cyan)
         pen.setWidth(2)
         self.qp.setPen(pen)
         leftAlign = altTapeLeftAlign - 1.5 * altBoxSpikedimension
@@ -2391,19 +2417,19 @@ class pyG5AIWidget(pyG5Widget):
         if 1:
             self.qp.drawText(
                 rect,
-                Qt.AlignHCenter | Qt.AlignVCenter,
+                Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter,
                 "{:04.00f}".format(33.863886 * self._alt_setting),
             )
         else:
             self.qp.drawText(
                 rect,
-                Qt.AlignHCenter | Qt.AlignVCenter,
+                Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter,
                 "{:02.02f}".format(self._alt_setting),
             )
 
         # draw the altitude selector
         pen = self.qp.pen()
-        pen.setColor(Qt.cyan)
+        pen.setColor(Qt.GlobalColor.cyan)
         pen.setWidth(2)
         self.qp.setPen(pen)
         leftAlign = altTapeLeftAlign - 1.5 * altBoxSpikedimension
@@ -2417,7 +2443,7 @@ class pyG5AIWidget(pyG5Widget):
 
         self.qp.drawText(
             rect,
-            Qt.AlignHCenter | Qt.AlignVCenter,
+            Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter,
             "{:d}ft".format(int(self._altitudeSel)),
         )
 
@@ -2444,9 +2470,9 @@ class pyG5AIWidget(pyG5Widget):
             QPointF(g5CenterX + turnrateHalfWidth, g5Height - turnrateHeight),
         )
 
-        self.setPen(0, Qt.transparent)
+        self.setPen(0, Qt.GlobalColor.transparent)
 
-        brush = QBrush(QColor(Qt.magenta))
+        brush = QBrush(QColor(Qt.GlobalColor.magenta))
         self.qp.setBrush(brush)
         rect = QRectF(
             g5CenterX,
@@ -2569,12 +2595,12 @@ class pyG5FMA(pyG5Widget):
         """Paint the widget."""
         self.qp = QPainter(self)
 
-        self.setPen(1, Qt.black)
-        self.qp.setBrush(QBrush(Qt.black))
+        self.setPen(1, Qt.GlobalColor.black)
+        self.qp.setBrush(QBrush(Qt.GlobalColor.black))
         self.qp.drawRect(0, 0, g5Width, fmaHeight)
 
         if self._avionicson == 0:
-            self.setPen(1, Qt.white)
+            self.setPen(1, Qt.GlobalColor.white)
             self.qp.drawLine(0, 0, g5Width, fmaHeight)
             self.qp.drawLine(0, fmaHeight, g5Width, 0)
             self.qp.end()
@@ -2582,7 +2608,7 @@ class pyG5FMA(pyG5Widget):
 
         # draw the FMA sections delimiters
         delimMargin = 5
-        self.setPen(2, Qt.white)
+        self.setPen(2, Qt.GlobalColor.white)
         self.qp.drawLine(
             QLineF(g5Width / 2, delimMargin, g5Width / 2, fmaHeight - delimMargin)
         )
@@ -2590,7 +2616,7 @@ class pyG5FMA(pyG5Widget):
             QLineF(g5Width / 3, delimMargin, g5Width / 3, fmaHeight - delimMargin)
         )
 
-        self.setPen(2, Qt.green)
+        self.setPen(2, Qt.GlobalColor.green)
 
         font = self.qp.font()
         font.setPixelSize(20)
@@ -2608,7 +2634,7 @@ class pyG5FMA(pyG5Widget):
                     g5Width / 6 - 2 * delimMargin,
                     fmaHeight - 2 * delimMargin,
                 ),
-                Qt.AlignHCenter | Qt.AlignVCenter,
+                Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter,
                 mode,
             )
 
@@ -2635,7 +2661,7 @@ class pyG5FMA(pyG5Widget):
                     g5Width / 6 - 2 * delimMargin,
                     fmaHeight - 2 * delimMargin,
                 ),
-                Qt.AlignHCenter | Qt.AlignVCenter,
+                Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter,
                 hmode,
             )
 
@@ -2660,12 +2686,12 @@ class pyG5FMA(pyG5Widget):
                     g5Width * 2 / 6 - 2 * delimMargin,
                     fmaHeight - 2 * delimMargin,
                 ),
-                Qt.AlignLeft | Qt.AlignVCenter,
+                Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
                 vmode,
             )
 
         # draw the armed horizontal navigation mode
-        self.setPen(2, Qt.white)
+        self.setPen(2, Qt.GlobalColor.white)
 
         if int(self._apState) & 0x100:
             if int(self._hsiSource) == 2:
@@ -2684,7 +2710,7 @@ class pyG5FMA(pyG5Widget):
                     g5Width / 6 - 2 * delimMargin,
                     fmaHeight - 2 * delimMargin,
                 ),
-                Qt.AlignHCenter | Qt.AlignVCenter,
+                Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter,
                 hmode,
             )
         vmode = ""
@@ -2706,7 +2732,7 @@ class pyG5FMA(pyG5Widget):
                 g5Width * 2 / 6 - 2 * delimMargin,
                 fmaHeight - 2 * delimMargin,
             ),
-            Qt.AlignHCenter | Qt.AlignVCenter,
+            Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter,
             vmode,
         )
 

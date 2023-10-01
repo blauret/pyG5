@@ -6,8 +6,8 @@ Created on 8 Aug 2021.
 
 import sys
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import (
     QApplication,
     QHBoxLayout,
     QGridLayout,
@@ -20,6 +20,8 @@ from PyQt5.QtWidgets import (
     QWidget,
     QScrollArea,
 )
+
+from PyQt6.QtGui import QKeySequence, QAction
 
 from pyG5.pyG5View import pyG5DualStackFMA, g5Width, g5Height, pyG5SecondaryWidget
 
@@ -42,7 +44,7 @@ def controlWidgetGen(control):
 
     layout.addWidget(QLabel(control["name"], parent=w), 0, 0)
 
-    slider = QSlider(Qt.Horizontal, parent=w)
+    slider = QSlider(Qt.Orientation.Horizontal, parent=w)
     slider.setRange(control["min"], control["max"])
 
     spinbox = QSpinBox(parent=w)
@@ -84,7 +86,11 @@ if __name__ == "__main__":
     # Set window title
     w.setWindowTitle("Garmin G5")
     file_menu = QMenu("&File", w)
-    file_menu.addAction("&Quit", w.close, Qt.CTRL + Qt.Key_W)
+
+    quitAction = QAction("&Quit", w)
+    quitAction.setShortcut(QKeySequence("Ctrl+w"))
+    quitAction.triggered.connect(w.close)
+    file_menu.addAction(quitAction)
 
     menuBar = w.menuBar()
     menuBar.addMenu(file_menu)
@@ -168,6 +174,6 @@ if __name__ == "__main__":
     # Show window
     w.show()
 
-    sys.exit(a.exec_())
+    sys.exit(a.exec())
 
     pass
