@@ -13,18 +13,18 @@ import sys
 import platform
 
 
-from PyQt6.QtCore import (
+from PySide6.QtCore import (
     Qt,
     QTimer,
     QCoreApplication,
     QSettings,
-    pyqtSlot,
+    Slot,
     QByteArray,
-    pyqtSignal,
+    Signal,
     QEvent,
 )
-from PyQt6.QtGui import QFont, QFontDatabase, QCloseEvent, QAction
-from PyQt6.QtWidgets import (
+from PySide6.QtGui import QFont, QFontDatabase, QCloseEvent, QAction
+from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
 )
@@ -34,7 +34,7 @@ from pyG5.pyG5View import pyG5DualStackFMA, pyG5SecondaryWidget
 
 
 class pyG5App(QApplication):
-    """pyG5App PyQt6 application.
+    """pyG5App PySide6 application.
 
     Args:
         sys.argv
@@ -83,7 +83,7 @@ class pyG5App(QApplication):
         )  # Let the interpreter run each 500 ms.
         self.paintTimer.start(25)  # You may change this if you wish.
 
-        # The QWidget widget is the base class of all user interface objects in PyQt6.
+        # The QWidget widget is the base class of all user interface objects in PySide6.
         self.mainWindow = pyG5MainWindow()
 
         self.networkManager.drefUpdate.connect(
@@ -173,7 +173,7 @@ class pyG5App(QApplication):
 
 
 class pyG5BaseWindow(QMainWindow):
-    """pyG5App PyQt6 application.
+    """pyG5App PySide6 application.
 
     Args:
         sys.argv
@@ -182,7 +182,7 @@ class pyG5BaseWindow(QMainWindow):
         self
     """
 
-    closed = pyqtSignal()
+    closed = Signal()
 
     def __init__(self, parent=None):
         """g5Widget Constructor.
@@ -251,7 +251,7 @@ class pyG5BaseWindow(QMainWindow):
             logging.warning("State restore: {}".format(inst))
             pass
 
-    @pyqtSlot(QCloseEvent)
+    @Slot(QCloseEvent)
     def closeEvent(self, event):
         """Close event overload.
 
@@ -273,7 +273,7 @@ class pyG5BaseWindow(QMainWindow):
 
 
 class pyG5MainWindow(pyG5BaseWindow):
-    """pyG5App PyQt6 application.
+    """pyG5App PySide6 application.
 
     Args:
         sys.argv
@@ -282,7 +282,7 @@ class pyG5MainWindow(pyG5BaseWindow):
         self
     """
 
-    closed = pyqtSignal()
+    closed = Signal()
 
     def __init__(self, parent=None):
         """g5Widget Constructor.
@@ -310,7 +310,7 @@ class pyG5SecondWindow(pyG5BaseWindow):
         self
     """
 
-    closed = pyqtSignal()
+    closed = Signal()
 
     def __init__(self, parent=None):
         """g5Widget Constructor.

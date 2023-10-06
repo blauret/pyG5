@@ -6,8 +6,8 @@ Created on 8 Aug 2021.
 
 import sys
 
-from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import (
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import (
     QApplication,
     QHBoxLayout,
     QGridLayout,
@@ -21,7 +21,7 @@ from PyQt6.QtWidgets import (
     QScrollArea,
 )
 
-from PyQt6.QtGui import QKeySequence, QAction
+from PySide6.QtGui import QKeySequence, QAction
 
 from pyG5.pyG5View import pyG5DualStackFMA, g5Width, g5Height, pyG5SecondaryWidget
 

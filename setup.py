@@ -12,7 +12,7 @@ with open("README.md") as readme_file:
 # commented out due to impossibility
 # to install PyQt5 automatically from pip on Raspbian
 # requirements = ["PyQt5"]
-requirements = ["PyQt6"]
+requirements = ["PySide6"]
 
 test_requirements = [
     # TODO: put package test requirements here

@@ -11,11 +11,11 @@ import binascii
 import os
 from datetime import datetime as datetime_, timedelta
 
-from PyQt6.QtCore import QObject, pyqtSlot, pyqtSignal, QTimer
+from PySide6.QtCore import QObject, Slot, Signal, QTimer
 
-from PyQt6.QtNetwork import QUdpSocket, QHostAddress, QAbstractSocket
+from PySide6.QtNetwork import QUdpSocket, QHostAddress, QAbstractSocket
 
-from PyQt6 import QtGui
+from PySide6 import QtGui
 
 
 class pyG5NetWorkManager(QObject):
@@ -32,7 +32,7 @@ class pyG5NetWorkManager(QObject):
         self
     """
 
-    drefUpdate = pyqtSignal(dict)
+    drefUpdate = Signal(dict)
 
     def __init__(self, parent=None):
         """Object constructor.
@@ -633,7 +633,7 @@ class pyG5NetWorkManager(QObject):
             QHostAddress.SpecialAddress.AnyIPv4, 0, QUdpSocket.BindFlag.ShareAddress
         )
 
-    @pyqtSlot()
+    @Slot()
     def write_data_ref(self, path, data):
         """Idle timer expired. Trigger reconnection process."""
         cmd = b"DREF\x00"  # DREF command
@@ -643,7 +643,7 @@ class pyG5NetWorkManager(QObject):
         if self.xpHost:
             self.udpSock.writeDatagram(message, self.xpHost, self.xpPort)
 
-    @pyqtSlot()
+    @Slot()
     def reconnect(self):
         """Idle timer expired. Trigger reconnection process."""
         self.logger.info("Connection Timeout expired")
@@ -656,7 +656,7 @@ class pyG5NetWorkManager(QObject):
             os.system("xset s on")
             os.system("xset s 1")
 
-    @pyqtSlot(QHostAddress, int)
+    @Slot(QHostAddress, int)
     def xplaneConnect(self, addr, port):
         """Slot connecting triggering the connection to the XPlane."""
         self.listener.xpInstance.disconnect(self.xplaneConnect)
@@ -687,7 +687,7 @@ class pyG5NetWorkManager(QObject):
             os.system("xset s reset")
             os.system("xset s off")
 
-    @pyqtSlot()
+    @Slot()
     def socketStateHandler(self):
         """Socket State handler."""
         self.logger.info("socketStateHandler: {}".format(self.udpSock.state()))
@@ -706,7 +706,7 @@ class pyG5NetWorkManager(QObject):
                 QHostAddress.SpecialAddress.AnyIPv4, 0, QUdpSocket.BindFlag.ShareAddress
             )
 
-    @pyqtSlot()
+    @Slot()
     def dataHandler(self):
         """dataHandler."""
         # data received restart the idle timer
@@ -756,7 +756,7 @@ class pyG5MulticastListener(QObject):
         self
     """
 
-    xpInstance = pyqtSignal(QHostAddress, int)
+    xpInstance = Signal(QHostAddress, int)
 
     def __init__(self, parent=None):
         """Object constructor.
@@ -788,17 +788,17 @@ class pyG5MulticastListener(QObject):
         if not self.udpSock.joinMulticastGroup(self.XPAddr):
             logging.error("Failed to join multicast group")
 
-    @pyqtSlot(QAbstractSocket.SocketState)
+    @Slot(QAbstractSocket.SocketState)
     def stateChangedSlot(self, state):
         """stateChangedSlot."""
         self.logger.debug("Sock new state: {}".format(state))
 
-    @pyqtSlot()
+    @Slot()
     def connectedSlot(self):
         """connectedSlot."""
         self.logger.debug("udp connected: {}".format(self.udpSock.state()))
 
-    @pyqtSlot()
+    @Slot()
     def udpData(self):
         """udpData."""
         while self.udpSock.hasPendingDatagrams():

@@ -9,17 +9,17 @@ import logging
 from math import cos, radians, sin, sqrt, floor
 from functools import wraps
 
-from PyQt6.QtCore import (
+from PySide6.QtCore import (
     QLine,
     QPoint,
     QPointF,
     QRectF,
     QLineF,
     Qt,
-    pyqtSlot,
-    pyqtSignal,
+    Slot,
+    Signal,
 )
-from PyQt6.QtGui import (
+from PySide6.QtGui import (
     QBrush,
     QPainter,
     QPolygonF,
@@ -27,7 +27,7 @@ from PyQt6.QtGui import (
     QLinearGradient,
     QRadialGradient,
 )
-from PyQt6.QtWidgets import (
+from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
 )
@@ -216,7 +216,7 @@ class pyG5Widget(QWidget):
         pen.setStyle(style)
         self.qp.setPen(pen)
 
-    @pyqtSlot(dict)
+    @Slot(dict)
     def drefHandler(self, retValues):
         """Handle the DREF update."""
         for idx, value in retValues.items():
@@ -253,8 +253,8 @@ secHeight = 480
 class pyG5SecondaryWidget(pyG5Widget):
     """Generate G5 wdiget view."""
 
-    xpdrCodeSignal = pyqtSignal(int)
-    xpdrModeSignal = pyqtSignal(int)
+    xpdrCodeSignal = Signal(int)
+    xpdrModeSignal = Signal(int)
 
     def __init__(self, parent=None):
         """g5Widget Constructor.
