@@ -6,8 +6,8 @@ Created on 8 Aug 2021.
 
 import sys
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import (
     QApplication,
     QHBoxLayout,
     QGridLayout,
@@ -21,7 +21,9 @@ from PyQt5.QtWidgets import (
     QScrollArea,
 )
 
-from pyG5.pyG5View import pyG5DualStack, g5Width, g5Height
+from PySide6.QtGui import QKeySequence, QAction
+
+from pyG5.pyG5View import pyG5DualStackFMA, g5Width, g5Height, pyG5SecondaryWidget
 
 sliderWdith = 300
 
@@ -42,7 +44,7 @@ def controlWidgetGen(control):
 
     layout.addWidget(QLabel(control["name"], parent=w), 0, 0)
 
-    slider = QSlider(Qt.Horizontal, parent=w)
+    slider = QSlider(Qt.Orientation.Horizontal, parent=w)
     slider.setRange(control["min"], control["max"])
 
     spinbox = QSpinBox(parent=w)
@@ -80,11 +82,15 @@ if __name__ == "__main__":
 
     # Set window size.
     w.resize(sliderWdith + g5Width, g5Height)
-
+    w.move(0, 0)
     # Set window title
     w.setWindowTitle("Garmin G5")
     file_menu = QMenu("&File", w)
-    file_menu.addAction("&Quit", w.close, Qt.CTRL + Qt.Key_W)
+
+    quitAction = QAction("&Quit", w)
+    quitAction.setShortcut(QKeySequence("Ctrl+w"))
+    quitAction.triggered.connect(w.close)
+    file_menu.addAction(quitAction)
 
     menuBar = w.menuBar()
     menuBar.addMenu(file_menu)
@@ -102,12 +108,23 @@ if __name__ == "__main__":
     scrollArea.setObjectName("scrollArea")
     controlVLayout = QVBoxLayout()
     controlWidget.setLayout(controlVLayout)
-    hlayout.addWidget(scrollArea)
 
-    g5View = pyG5DualStack()
+    secView = pyG5SecondaryWidget()
+    vlayout = QVBoxLayout()
+    vlayout.addWidget(scrollArea)
+    vlayout.addWidget(secView)
+
+    hlayout.addLayout(vlayout)
+    g5View = pyG5DualStackFMA()
     hlayout.addWidget(g5View)
 
     controls = [
+        makeControlDict("altitude", -1000, 45000),
+        makeControlDict("altitudeSel", -1000, 45000),
+        makeControlDict("flaps", 0, 4),
+        makeControlDict("trims", -1, 1),
+        makeControlDict("carbheat", 0, 1),
+        makeControlDict("fuelsel", -1, 1),
         makeControlDict("avionicson", 0, 1),
         makeControlDict("magHeading", 0, 360),
         makeControlDict("groundTrack", 0, 360),
@@ -116,7 +133,6 @@ if __name__ == "__main__":
         makeControlDict("kias", 0, 230),
         makeControlDict("kiasDelta", -30, 30),
         makeControlDict("gs", 0, 230),
-        makeControlDict("altitude", -1000, 45000),
         makeControlDict("vh_ind_fpm", -1500, 1500),
         makeControlDict("turnRate", -130, 130),
         makeControlDict("slip", -10, 10),
@@ -136,6 +152,8 @@ if __name__ == "__main__":
         makeControlDict("gpsdft", -3, 3),
         makeControlDict("gpsgsavailable", 0, 1),
         makeControlDict("gpsgs", -30, 30),
+        makeControlDict("gpshsisens", 0, 15),
+        makeControlDict("parkBrake", 0, 1),
     ]
 
     for control in controls:
@@ -143,6 +161,8 @@ if __name__ == "__main__":
         try:
             slider.valueChanged.connect(getattr(g5View.pyG5AI, control["name"]))
             slider.valueChanged.connect(getattr(g5View.pyG5HSI, control["name"]))
+            slider.valueChanged.connect(getattr(g5View.pyG5FMA, control["name"]))
+            slider.valueChanged.connect(getattr(secView, control["name"]))
             print("Slider connected: {}".format(control["name"]))
         except Exception as inst:
             print("{} control not connected to view: {}".format(control["name"], inst))
@@ -154,6 +174,6 @@ if __name__ == "__main__":
     # Show window
     w.show()
 
-    sys.exit(a.exec_())
+    sys.exit(a.exec())
 
     pass

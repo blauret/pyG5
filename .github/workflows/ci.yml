@@ -9,7 +9,7 @@ on:
 
 env:
   CACHE_VERSION: 1
-  DEFAULT_PYTHON: "3.10"
+  DEFAULT_PYTHON: "3.11"
   PRE_COMMIT_HOME: ~/.cache/pre-commit
 
 jobs:
@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10"]
+        python-version: ["3.11"]
     steps:
       - name: Check out code from GitHub
         uses: actions/checkout@v2
@@ -48,7 +48,6 @@ jobs:
           . venv/bin/activate
           pip install -U pip setuptools pre-commit
           pip install -r requirements.txt
-          pip install -e .
 
   pre-commit:
     name: Prepare pre-commit environment

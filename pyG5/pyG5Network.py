@@ -11,11 +11,11 @@ import binascii
 import os
 from datetime import datetime as datetime_, timedelta
 
-from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal, QTimer
+from PySide6.QtCore import QObject, Slot, Signal, QTimer
 
-from PyQt5.QtNetwork import QUdpSocket, QHostAddress, QAbstractSocket
+from PySide6.QtNetwork import QUdpSocket, QHostAddress, QAbstractSocket
 
-from PyQt5 import QtGui
+from PySide6 import QtGui
 
 
 class pyG5NetWorkManager(QObject):
@@ -32,8 +32,7 @@ class pyG5NetWorkManager(QObject):
         self
     """
 
-    xpInstance = pyqtSignal(QHostAddress, int)
-    drefUpdate = pyqtSignal(dict)
+    drefUpdate = Signal(object)
 
     def __init__(self, parent=None):
         """Object constructor.
@@ -45,10 +44,179 @@ class pyG5NetWorkManager(QObject):
             self
         """
         QObject.__init__(self, parent)
-        # sim/cockpit/radios/gps_cdi_sensitivity	int	n	enum	GPS CDI sensitivity: 0=OCN, 1=ENR, 2=TERM, 3=DPRT, 4=MAPR, 5=APR, 6=RNPAR, 7=LNAV, 8=LNAV+V, 9=L/VNAV, 10=LP, 11=LPV, 12=LP+V, 13=GLS
+
+        self.xpHost = None
         # list the datarefs to request
         self.datarefs = [
             # ( dataref, frequency, unit, description, num decimals to display in formatted output )
+            (
+                "sim/cockpit2/autopilot/altitude_hold_ft",
+                20,
+                "ft",
+                "Altitude Hold",
+                0,
+                "_altitudeHold",
+            ),
+            (
+                "sim/cockpit2/autopilot/altitude_vnav_ft",
+                20,
+                "ft",
+                "Altitude VNAV",
+                0,
+                "_altitudeVNAV",
+            ),
+            (
+                "sim/cockpit2/radios/indicators/nav_src_ref",
+                20,
+                "enum",
+                "NAV source",
+                0,
+                "_navSrc",
+            ),
+            (
+                "sim/cockpit/autopilot/altitude",
+                20,
+                "feet",
+                "AP altitude selected",
+                0,
+                "_apAltitude",
+            ),
+            (
+                "sim/cockpit/autopilot/vertical_velocity",
+                20,
+                "fpm",
+                "NAV source",
+                0,
+                "_apVS",
+            ),
+            (
+                "sim/cockpit/autopilot/airspeed",
+                20,
+                "kt",
+                "AP air speed",
+                0,
+                "_apAirSpeed",
+            ),
+            (
+                "sim/cockpit/autopilot/autopilot_mode",
+                20,
+                "enum",
+                "AP mode",
+                0,
+                "_apMode",
+            ),
+            (
+                "sim/cockpit/autopilot/autopilot_state",
+                20,
+                "enum",
+                "AP state",
+                0,
+                "_apState",
+            ),
+            (
+                "sim/flightmodel/controls/parkbrake",
+                1,
+                "onoff",
+                "Parking brake set",
+                0,
+                "_parkBrake",
+            ),
+            (
+                "sim/cockpit/warnings/annunciators/fuel_quantity",
+                1,
+                "onoff",
+                "fuel selector",
+                0,
+                "_lowFuel",
+            ),
+            (
+                "sim/cockpit/warnings/annunciators/oil_pressure_low[0]",
+                1,
+                "onoff",
+                "fuel selector",
+                0,
+                "_oilPres",
+            ),
+            (
+                "sim/cockpit/warnings/annunciators/fuel_pressure_low[0]",
+                1,
+                "onoff",
+                "fuel selector",
+                0,
+                "_fuelPress",
+            ),
+            (
+                "sim/cockpit/warnings/annunciators/low_vacuum",
+                1,
+                "onoff",
+                "fuel selector",
+                0,
+                "_lowVacuum",
+            ),
+            (
+                "sim/cockpit/warnings/annunciators/low_voltage",
+                1,
+                "onoff",
+                "fuel selector",
+                0,
+                "_lowVolts",
+            ),
+            (
+                "sim/cockpit2/fuel/fuel_tank_selector",
+                30,
+                "onoff",
+                "fuel selector",
+                0,
+                "_fuelSel",
+            ),
+            (
+                "sim/cockpit2/engine/actuators/carb_heat_ratio[0]",
+                30,
+                "onoff",
+                "fuel pump on",
+                0,
+                "_carbheat",
+            ),
+            (
+                "sim/cockpit/engine/fuel_pump_on[0]",
+                10,
+                "onoff",
+                "fuel pump on",
+                0,
+                "_fuelpump",
+            ),
+            (
+                "sim/flightmodel/controls/elv_trim",
+                30,
+                "mode",
+                "Transponder mode",
+                0,
+                "_trims",
+            ),
+            (
+                "sim/flightmodel/controls/flaprat",
+                30,
+                "mode",
+                "Transponder mode",
+                0,
+                "_flaps",
+            ),
+            (
+                "sim/cockpit/radios/transponder_mode",
+                5,
+                "mode",
+                "Transponder mode",
+                0,
+                "_xpdrMode",
+            ),
+            (
+                "sim/cockpit/radios/transponder_code",
+                5,
+                "code",
+                "Transponder code",
+                0,
+                "_xpdrCode",
+            ),
             (
                 "sim/cockpit/radios/gps_dme_dist_m",
                 1,
@@ -66,12 +234,13 @@ class pyG5NetWorkManager(QObject):
                 "_gpsvnavavailable",
             ),
             (
+                # int	n	enum	GPS CDI sensitivity: 0=OCN, 1=ENR, 2=TERM, 3=DPRT, 4=MAPR, 5=APR, 6=RNPAR, 7=LNAV, 8=LNAV+V, 9=L/VNAV, 10=LP, 11=LPV, 12=LP+V, 13=GLS
                 "sim/cockpit/radios/gps_cdi_sensitivity",
                 1,
-                "boolean",
-                "Avionics powered on",
+                "index",
+                "GPS Horizontal Situation Indicator sensitivity mode",
                 0,
-                "_test",
+                "_gpshsisens",
             ),
             (
                 "sim/cockpit/radios/gps_has_glideslope",
@@ -82,14 +251,6 @@ class pyG5NetWorkManager(QObject):
                 "_gpsgsavailable",
             ),
             (
-                "sim/cockpit/radios/gps_hdef_nm_per_dot",
-                1,
-                "boolean",
-                "Avionics powered on",
-                0,
-                "_gpshsisens",
-            ),
-            (
                 "sim/cockpit/radios/gps_gp_mtr_per_dot",
                 1,
                 "boolean",
@@ -98,7 +259,7 @@ class pyG5NetWorkManager(QObject):
                 "_gpsvsens",
             ),
             (
-                "sim/cockpit/radios/",
+                "sim/cockpit/radios/nav_type[0]",
                 1,
                 "boolean",
                 "Avionics powered on",
@@ -362,12 +523,28 @@ class pyG5NetWorkManager(QObject):
                 "_altitude",
             ),
             (
+                "sim/cockpit2/autopilot/altitude_dial_ft",
+                30,
+                "feet",
+                "Altitude",
+                0,
+                "_altitudeSel",
+            ),
+            (
                 "sim/cockpit2/gauges/actuators/barometer_setting_in_hg_pilot",
                 30,
                 "feet",
                 "Altimeter setting",
                 0,
                 "_alt_setting",
+            ),
+            (
+                "sim/physics/metric_press",
+                1,
+                "feet",
+                "Altimeter setting",
+                0,
+                "_alt_setting_metric",
             ),
             (
                 "sim/cockpit2/gauges/indicators/slip_deg",
@@ -452,9 +629,21 @@ class pyG5NetWorkManager(QObject):
         self.udpSock.stateChanged.connect(self.socketStateHandler)
 
         # bind the socket
-        self.udpSock.bind(QHostAddress.AnyIPv4, 0, QUdpSocket.ShareAddress)
+        self.udpSock.bind(
+            QHostAddress.SpecialAddress.AnyIPv4, 0, QUdpSocket.BindFlag.ShareAddress
+        )
 
-    @pyqtSlot()
+    @Slot()
+    def write_data_ref(self, path, data):
+        """Idle timer expired. Trigger reconnection process."""
+        cmd = b"DREF\x00"  # DREF command
+        message = struct.pack("<5sf", cmd, data)
+        message += bytes(path, "utf-8") + b"\x00"
+        message += " ".encode("utf-8") * (509 - len(message))
+        if self.xpHost:
+            self.udpSock.writeDatagram(message, self.xpHost, self.xpPort)
+
+    @Slot()
     def reconnect(self):
         """Idle timer expired. Trigger reconnection process."""
         self.logger.info("Connection Timeout expired")
@@ -463,15 +652,18 @@ class pyG5NetWorkManager(QObject):
         self.idleTimer.stop()
 
         # let the screensaver activate
-        if platform.machine() in "armv7l":
+        if platform.machine() in "aarch64":
             os.system("xset s on")
             os.system("xset s 1")
 
-    @pyqtSlot(QHostAddress, int)
+    @Slot(QHostAddress, int)
     def xplaneConnect(self, addr, port):
         """Slot connecting triggering the connection to the XPlane."""
         self.listener.xpInstance.disconnect(self.xplaneConnect)
         self.listener.deleteLater()
+
+        self.xpHost = addr
+        self.xpPort = port
 
         self.logger.info("Request datatefs")
         # initiate connection
@@ -491,16 +683,16 @@ class pyG5NetWorkManager(QObject):
         self.idleTimer.start(self.idleTimerDuration)
 
         # now we can inhibit the screensaver
-        if platform.machine() in "armv7l":
+        if platform.machine() in "aarch64":
             os.system("xset s reset")
             os.system("xset s off")
 
-    @pyqtSlot()
+    @Slot()
     def socketStateHandler(self):
         """Socket State handler."""
         self.logger.info("socketStateHandler: {}".format(self.udpSock.state()))
 
-        if self.udpSock.state() == QAbstractSocket.BoundState:
+        if self.udpSock.state() == QAbstractSocket.SocketState.BoundState:
             self.logger.info("Started Multicast listenner")
             # instantiate the multicast listener
             self.listener = pyG5MulticastListener(self)
@@ -508,11 +700,13 @@ class pyG5NetWorkManager(QObject):
             # connect the multicast listenner to the connect function
             self.listener.xpInstance.connect(self.xplaneConnect)
 
-        elif self.udpSock.state() == QAbstractSocket.UnconnectedState:
+        elif self.udpSock.state() == QAbstractSocket.SocketState.UnconnectedState:
             # socket got disconnected issue reconnection
-            self.udpSock.bind(QHostAddress.AnyIPv4, 0, QUdpSocket.ShareAddress)
+            self.udpSock.bind(
+                QHostAddress.SpecialAddress.AnyIPv4, 0, QUdpSocket.BindFlag.ShareAddress
+            )
 
-    @pyqtSlot()
+    @Slot()
     def dataHandler(self):
         """dataHandler."""
         # data received restart the idle timer
@@ -536,14 +730,14 @@ class pyG5NetWorkManager(QObject):
                 value = 0
                 for i in range(0, numvalues):
                     singledata = data[(5 + lenvalue * i) : (5 + lenvalue * (i + 1))]
-                    (idx, value) = struct.unpack("<if", singledata)
+                    (idx, value) = struct.unpack("<if", singledata.data())
                     retvalues[idx] = (
                         value,
                         self.datarefs[idx][1],
                         self.datarefs[idx][0],
                         self.datarefs[idx][5],
                     )
-                    # if idx <= 2:
+                    # if idx == 0:
                     #     print("idx: {}, value: {}".format(idx, value))
                 self.drefUpdate.emit(retvalues)
 
@@ -562,7 +756,7 @@ class pyG5MulticastListener(QObject):
         self
     """
 
-    xpInstance = pyqtSignal(QHostAddress, int)
+    xpInstance = Signal(QHostAddress, int)
 
     def __init__(self, parent=None):
         """Object constructor.
@@ -586,21 +780,25 @@ class pyG5MulticastListener(QObject):
         self.udpSock.stateChanged.connect(self.stateChangedSlot)
         self.udpSock.readyRead.connect(self.udpData)
         self.udpSock.connected.connect(self.connectedSlot)
-        self.udpSock.bind(QHostAddress.AnyIPv4, self.XPPort, QUdpSocket.ShareAddress)
+        self.udpSock.bind(
+            QHostAddress.SpecialAddress.AnyIPv4,
+            self.XPPort,
+            QUdpSocket.BindFlag.ShareAddress,
+        )
         if not self.udpSock.joinMulticastGroup(self.XPAddr):
             logging.error("Failed to join multicast group")
 
-    @pyqtSlot(QAbstractSocket.SocketState)
+    @Slot(QAbstractSocket.SocketState)
     def stateChangedSlot(self, state):
         """stateChangedSlot."""
         self.logger.debug("Sock new state: {}".format(state))
 
-    @pyqtSlot()
+    @Slot()
     def connectedSlot(self):
         """connectedSlot."""
         self.logger.debug("udp connected: {}".format(self.udpSock.state()))
 
-    @pyqtSlot()
+    @Slot()
     def udpData(self):
         """udpData."""
         while self.udpSock.hasPendingDatagrams():
