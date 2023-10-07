@@ -106,7 +106,6 @@ class pyG5App(QApplication):
             )
             self.mainWindow.setWindowState(Qt.WindowFullScreen)
 
-
         self.mainWindow.show()
 
         if self.args.mode == "full":
@@ -133,7 +132,6 @@ class pyG5App(QApplication):
             self.secondaryWindow.cWidget.xpdrModeSignal.connect(
                 self.send_transponder_mode
             )
-
 
             self.secondaryWindow.show()
 
