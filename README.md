@@ -31,19 +31,11 @@ Not all the features of the G5 are implemented. It's currently missing:
 
 ## Installation
 
-`pyG5` depends on `PyQt5`. Due to failure to install `PyQt5` from pip on Raspberry Pi OS it is not
+`pyG5` depends on `pySide6`. Due to failure to install `pySide6` from pip on Raspberry Pi OS it is not
 a dependency of the `pyG5`. As a result it needs to be installed manually.
 
-Raspberry Pi OS:
-
 ```console
-        > sudo apt-get install python3-pyqt5
-```
-
-other OS:
-
-```console
-        > sudo pip3 install PyQt5
+        > sudo pip3 install pyside6
 ```
 
 The install `PyG5`:
