@@ -700,7 +700,7 @@ class pyG5NetWorkManager(QObject):
             # connect the multicast listenner to the connect function
             self.listener.xpInstance.connect(self.xplaneConnect)
 
-        elif self.udpSock.state() == QAbstractSocket.LocalSocketState.UnconnectedState:
+        elif self.udpSock.state() == QAbstractSocket.SocketState.UnconnectedState:
             # socket got disconnected issue reconnection
             self.udpSock.bind(
                 QHostAddress.SpecialAddress.AnyIPv4, 0, QUdpSocket.BindFlag.ShareAddress
@@ -730,7 +730,7 @@ class pyG5NetWorkManager(QObject):
                 value = 0
                 for i in range(0, numvalues):
                     singledata = data[(5 + lenvalue * i) : (5 + lenvalue * (i + 1))]
-                    (idx, value) = struct.unpack("<if", singledata)
+                    (idx, value) = struct.unpack("<if", singledata.data())
                     retvalues[idx] = (
                         value,
                         self.datarefs[idx][1],

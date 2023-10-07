@@ -104,16 +104,22 @@ class pyG5App(QApplication):
             self.mainWindow.setWindowFlags(
                 self.mainWindow.windowFlags() | Qt.FramelessWindowHint
             )
+            self.mainWindow.setWindowState(Qt.WindowFullScreen)
+
 
         self.mainWindow.show()
 
         if self.args.mode == "full":
             self.secondaryWindow = pyG5SecondWindow()
 
+            self.secondaryWindow.loadSettings()
+
             if platform.machine() == "aarch64":
                 self.secondaryWindow.setWindowFlags(
                     self.secondaryWindow.windowFlags() | Qt.FramelessWindowHint
                 )
+
+                self.secondaryWindow.setWindowState(Qt.WindowFullScreen)
 
             # connect the value coming from the simulator
             self.networkManager.drefUpdate.connect(
@@ -128,7 +134,6 @@ class pyG5App(QApplication):
                 self.send_transponder_mode
             )
 
-            self.secondaryWindow.loadSettings()
 
             self.secondaryWindow.show()
 
