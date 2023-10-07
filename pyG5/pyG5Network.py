@@ -32,7 +32,7 @@ class pyG5NetWorkManager(QObject):
         self
     """
 
-    drefUpdate = Signal(dict)
+    drefUpdate = Signal(object)
 
     def __init__(self, parent=None):
         """Object constructor.
