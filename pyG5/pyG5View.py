@@ -165,6 +165,8 @@ class pyG5Widget(QWidget):
             ("nav2gs", 0),
             ("nav1dft", 0),
             ("nav2dft", 0),
+            ("nav1bearing", 0),
+            ("nav2bearing", 0),
             ("gpsdft", 0),
             ("gpsgsavailable", 0),
             ("gpsvnavavailable", 0),
@@ -188,8 +190,6 @@ class pyG5Widget(QWidget):
             ("slip", 0),
             ("headingBug", 0),
             ("vs", 30),
-            ("bearing1", 0),
-            ("bearing1avail", 0),
             ("vs0", 23),
             ("vfe", 88),
             ("vno", 118),
@@ -1075,8 +1075,8 @@ class pyG5HSIWidget(pyG5Widget):
             gsDev = self._nav1gs
 
         # bearing 1
-        if self._bearing1avail:
-            self.qp.rotate(90 - self._headingBug + self._bearing1)
+        if int(self._nav1fromto) != 0:
+            self.qp.rotate(90 - self._headingBug + self._nav1bearing)
 
             self.setPen(2, Qt.GlobalColor.cyan)
 
@@ -1109,7 +1109,60 @@ class pyG5HSIWidget(pyG5Widget):
                 )
             )
 
-            self.qp.rotate(-90 + self._headingBug - self._bearing1)
+            self.qp.rotate(-90 + self._headingBug - self._nav1bearing)
+
+        # bearing 2
+        if int(self._nav2fromto) != 0:
+            self.qp.rotate(90 - self._headingBug + self._nav2bearing)
+
+            self.setPen(2, Qt.GlobalColor.cyan)
+
+            # backside
+            self.qp.drawPolyline(
+                QPolygonF(
+                    [
+                        QPointF(-hsiCircleRadius, -5),
+                        QPointF(-hsiCircleRadius - 25, -5),
+                        QPointF(-hsiCircleRadius - 30, 0),
+                        QPointF(-rotatinghsiCircleRadius + 25, 0),
+                        QPointF(-hsiCircleRadius - 30, 0),
+                        QPointF(-hsiCircleRadius - 25, +5),
+                        QPointF(-hsiCircleRadius, +5),
+                    ]
+                )
+            )
+
+            # upside
+            self.qp.drawPolyline(
+                QPolygonF(
+                    [
+                        QPointF(rotatinghsiCircleRadius - 42, -5),
+                        QPointF(hsiCircleRadius, -5),
+                    ]
+                )
+            )
+            self.qp.drawPolyline(
+                QPolygonF(
+                    [
+                        QPointF(rotatinghsiCircleRadius - 42, +5),
+                        QPointF(hsiCircleRadius, +5),
+                    ]
+                )
+            )
+            # arrow
+            self.qp.drawPolyline(
+                QPolygonF(
+                    [
+                        QPointF(hsiCircleRadius + 25, -10),
+                        QPointF(hsiCircleRadius + 35, 0),
+                        QPointF(hsiCircleRadius + 45, 0),
+                        QPointF(hsiCircleRadius + 35, 0),
+                        QPointF(hsiCircleRadius + 25, 10),
+                    ]
+                )
+            )
+
+            self.qp.rotate(-90 + self._headingBug - self._nav2bearing)
 
         self.setPen(1, Qt.GlobalColor.black)
         self.qp.setBrush(QBrush(navColor))
