@@ -188,6 +188,8 @@ class pyG5Widget(QWidget):
             ("slip", 0),
             ("headingBug", 0),
             ("vs", 30),
+            ("bearing1", 0),
+            ("bearing1avail", 0),
             ("vs0", 23),
             ("vfe", 88),
             ("vno", 118),
@@ -1072,6 +1074,42 @@ class pyG5HSIWidget(pyG5Widget):
             vertAvailable = self._nav1gsavailable
             gsDev = self._nav1gs
 
+        # bearing 1
+        if self._bearing1avail:
+                       
+            self.qp.rotate(90 - self._headingBug + self._bearing1)
+
+            self.setPen(2, Qt.GlobalColor.cyan)
+        	
+            # arrow
+            self.qp.drawPolyline(
+                QPolygonF(
+                    [
+                        QPointF(rotatinghsiCircleRadius - 20, 0),
+                        QPointF(rotatinghsiCircleRadius - 25, 0),
+                        QPointF(rotatinghsiCircleRadius - 35, -17),
+                        QPointF(rotatinghsiCircleRadius - 25, 0),
+                        QPointF(rotatinghsiCircleRadius - 35, 17),
+                        QPointF(rotatinghsiCircleRadius - 25, 0),
+                        QPointF(hsiCircleRadius, 0)
+                    ]
+                )
+            )
+
+            # backside
+            self.qp.drawPolyline(
+                QPolygonF(
+                    [
+                        QPointF(-rotatinghsiCircleRadius + 25, 0),
+                        QPointF(-hsiCircleRadius, 0)
+                    ]
+                )
+            )
+
+            self.qp.rotate(-90 + self._headingBug - self._bearing1)
+        
+        
+        self.setPen(1, Qt.GlobalColor.black)
         self.qp.setBrush(QBrush(navColor))
         # Draw the CDI
         self.qp.rotate(90 - self._headingBug + navcrs)
