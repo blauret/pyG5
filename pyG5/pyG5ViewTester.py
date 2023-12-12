@@ -119,6 +119,8 @@ if __name__ == "__main__":
     hlayout.addWidget(g5View)
 
     controls = [
+        makeControlDict("bearing1avail", 0, 1),
+        makeControlDict("bearing1", 0, 360),
         makeControlDict("altitude", -1000, 45000),
         makeControlDict("altitudeSel", -1000, 45000),
         makeControlDict("flaps", 0, 4),

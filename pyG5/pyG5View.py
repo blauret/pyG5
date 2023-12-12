@@ -1076,39 +1076,41 @@ class pyG5HSIWidget(pyG5Widget):
 
         # bearing 1
         if self._bearing1avail:
-                       
             self.qp.rotate(90 - self._headingBug + self._bearing1)
 
             self.setPen(2, Qt.GlobalColor.cyan)
-        	
-            # arrow
+
+            # upside
             self.qp.drawPolyline(
                 QPolygonF(
                     [
-                        QPointF(rotatinghsiCircleRadius - 20, 0),
                         QPointF(rotatinghsiCircleRadius - 25, 0),
-                        QPointF(rotatinghsiCircleRadius - 35, -17),
-                        QPointF(rotatinghsiCircleRadius - 25, 0),
-                        QPointF(rotatinghsiCircleRadius - 35, 17),
-                        QPointF(rotatinghsiCircleRadius - 25, 0),
-                        QPointF(hsiCircleRadius, 0)
+                        QPointF(hsiCircleRadius, 0),
                     ]
                 )
             )
-
             # backside
             self.qp.drawPolyline(
                 QPolygonF(
                     [
                         QPointF(-rotatinghsiCircleRadius + 25, 0),
-                        QPointF(-hsiCircleRadius, 0)
+                        QPointF(-hsiCircleRadius, 0),
+                    ]
+                )
+            )
+            # arrow
+            self.qp.drawPolyline(
+                QPolygonF(
+                    [
+                        QPointF(hsiCircleRadius + 20, -10),
+                        QPointF(hsiCircleRadius + 30, 0),
+                        QPointF(hsiCircleRadius + 20, 10),
                     ]
                 )
             )
 
             self.qp.rotate(-90 + self._headingBug - self._bearing1)
-        
-        
+
         self.setPen(1, Qt.GlobalColor.black)
         self.qp.setBrush(QBrush(navColor))
         # Draw the CDI
