@@ -1271,13 +1271,14 @@ class pyG5HSIWidget(pyG5Widget):
             )
 
         # Draw the heading Bug indicator bottom corner
-        self.setPen(2, Qt.GlobalColor.cyan)
+        self.setPen(2, Qt.GlobalColor.gray)
         self.qp.setBrush(QBrush(Qt.GlobalColor.black))
 
         headingWidth = 105
         headingHeigth = 30
         self.qp.drawRect(QRectF(g5Width, g5Height, -headingWidth, -headingHeigth))
 
+        self.setPen(2, Qt.GlobalColor.cyan)
         # draw the bug symbol
         self.setPen(1, Qt.GlobalColor.cyan)
         self.qp.setBrush(QBrush(Qt.GlobalColor.cyan))
@@ -1538,10 +1539,132 @@ class pyG5HSIWidget(pyG5Widget):
 
             self.qp.resetTransform()
 
-        # draw the CRS selection
-
         crsBoxHeight = 30
         crsBoxWidth = 105
+
+        # draw the Selected Nav Bearing type
+        self.setPen(2, greyColor)
+        self.qp.setBrush(QBrush(Qt.GlobalColor.black))
+
+        if int(self._nav1fromto) != 0:
+            # draw the contour
+            self.qp.drawPolyline(
+                QPolygonF(
+                    [
+                        QPointF(0, g5Height - crsBoxHeight),
+                        QPointF(0, g5Height - 3 * crsBoxHeight),
+                        QPointF(60, g5Height - 3 * crsBoxHeight),
+                    ]
+                )
+            )
+
+            # draw the contour arc
+            self.qp.drawArc(
+                QRectF(g5Width / 2 - 195, g5Height / 2 - 185, 390, 390),
+                3268,
+                350,
+            )
+
+            # set color to cyan and draw the bearing symbol
+            self.setPen(2, Qt.GlobalColor.cyan)
+
+            self.qp.drawPolyline(
+                QPolygonF(
+                    [
+                        QPointF(10, g5Height - 2.5 * crsBoxHeight),
+                        QPointF(50, g5Height - 2.5 * crsBoxHeight),
+                    ]
+                )
+            )
+            self.qp.drawPolyline(
+                QPolygonF(
+                    [
+                        QPointF(30, g5Height - 2.8 * crsBoxHeight),
+                        QPointF(40, g5Height - 2.5 * crsBoxHeight),
+                        QPointF(30, g5Height - 2.2 * crsBoxHeight),
+                    ]
+                )
+            )
+
+            # draw the nav type
+            self.qp.drawText(
+                QRectF(
+                    QPointF(0, g5Height - crsBoxHeight),
+                    QPointF(crsBoxWidth, g5Height - 2 * crsBoxHeight),
+                ),
+                Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter,
+                "{}".format(self.getNavTypeString(self._nav1type, "")),
+            )
+
+        if int(self._nav2fromto) != 0:
+            # set color to grey
+            self.setPen(2, Qt.GlobalColor.gray)
+
+            # draw the contour
+            self.qp.drawPolyline(
+                QPolygonF(
+                    [
+                        QPointF(g5Width, g5Height - crsBoxHeight),
+                        QPointF(g5Width, g5Height - 3 * crsBoxHeight),
+                        QPointF(g5Width - 60, g5Height - 3 * crsBoxHeight),
+                    ]
+                )
+            )
+
+            # draw the contour arc
+            self.qp.drawArc(
+                QRectF(g5Width / 2 - 195, g5Height / 2 - 185, 390, 390),
+                5036,
+                335,
+            )
+
+            # set color to cyan and draw the bearing symbol
+            self.setPen(2, Qt.GlobalColor.cyan)
+            self.qp.drawPolyline(
+                QPolygonF(
+                    [
+                        QPointF(g5Width - 40, g5Height - 2.5 * crsBoxHeight),
+                        QPointF(g5Width - 50, g5Height - 2.5 * crsBoxHeight),
+                    ]
+                )
+            )
+            self.qp.drawPolyline(
+                QPolygonF(
+                    [
+                        QPointF(g5Width - 10, g5Height - 2.5 * crsBoxHeight + 5),
+                        QPointF(g5Width - 34, g5Height - 2.5 * crsBoxHeight + 5),
+                    ]
+                )
+            )
+            self.qp.drawPolyline(
+                QPolygonF(
+                    [
+                        QPointF(g5Width - 10, g5Height - 2.5 * crsBoxHeight - 5),
+                        QPointF(g5Width - 34, g5Height - 2.5 * crsBoxHeight - 5),
+                    ]
+                )
+            )
+            self.qp.drawPolyline(
+                QPolygonF(
+                    [
+                        QPointF(g5Width - 30, g5Height - 2.8 * crsBoxHeight),
+                        QPointF(g5Width - 40, g5Height - 2.5 * crsBoxHeight),
+                        QPointF(g5Width - 30, g5Height - 2.2 * crsBoxHeight),
+                    ]
+                )
+            )
+
+            # draw the nav type
+            self.qp.drawText(
+                QRectF(
+                    QPointF(g5Width, g5Height - crsBoxHeight),
+                    QPointF(g5Width - crsBoxWidth, g5Height - 2 * crsBoxHeight),
+                ),
+                Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter,
+                "{}".format(self.getNavTypeString(self._nav2type, "")),
+            )
+
+        # draw the CRS selection
 
         self.setPen(2, greyColor)
         self.qp.setBrush(QBrush(Qt.GlobalColor.black))
