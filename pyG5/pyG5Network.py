@@ -50,6 +50,22 @@ class pyG5NetWorkManager(QObject):
         self.datarefs = [
             # ( dataref, frequency, unit, description, num decimals to display in formatted output )
             (
+                "sim/cockpit/radios/nav1_dme_dist_m",
+                30,
+                "kt",
+                "dme Range anv1",
+                0,
+                "_nav1dme",
+            ),
+            (
+                "sim/cockpit/radios/nav2_dme_dist_m",
+                30,
+                "kt",
+                "dme Range nav2",
+                0,
+                "_nav2dme",
+            ),
+            (
                 "sim/cockpit2/radios/indicators/nav1_bearing_deg_mag",
                 30,
                 "degrees",

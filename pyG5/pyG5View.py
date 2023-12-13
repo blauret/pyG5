@@ -167,6 +167,8 @@ class pyG5Widget(QWidget):
             ("nav2dft", 0),
             ("nav1bearing", 0),
             ("nav2bearing", 0),
+            ("nav1dme", 0),
+            ("nav2dme", 0),
             ("gpsdft", 0),
             ("gpsgsavailable", 0),
             ("gpsvnavavailable", 0),
@@ -1305,7 +1307,11 @@ class pyG5HSIWidget(pyG5Widget):
         )
 
         # draw the dist box
-        if int(self._hsiSource) == 2:
+        if (
+            int(self._hsiSource) == 2
+            or (int(self._hsiSource) == 1 and int(self._nav2fromto) != 0)
+            or (int(self._hsiSource) == 0 and int(self._nav1fromto) != 0)
+        ):
             font.setPixelSize(12)
             font.setBold(False)
             self.qp.setFont(font)
@@ -1325,12 +1331,18 @@ class pyG5HSIWidget(pyG5Widget):
             font.setBold(True)
             self.qp.setFont(font)
             self.setPen(1, navColor)
+            if int(self._hsiSource) == 2:
+                dist = self._gpsdmedist
+            elif int(self._hsiSource) == 1:
+                dist = self._nav2dme
+            else:
+                dist = self._nav1dme
 
             distRect = QRectF(g5Width - 105, 12, 105, 45 - 12)
             self.qp.drawText(
                 distRect,
                 Qt.AlignmentFlag.AlignCenter,
-                "{}".format(round(self._gpsdmedist, 1)),
+                "{}".format(round(dist, 1)),
             )
 
         # set default font size
@@ -1596,7 +1608,7 @@ class pyG5HSIWidget(pyG5Widget):
                 "{}".format(self.getNavTypeString(self._nav1type, "")),
             )
 
-        if int(self._nav2fromto) != 0:
+        if int(self._nav2fromto) != 0 and vertAvailable == 0:
             # set color to grey
             self.setPen(2, Qt.GlobalColor.gray)
 
