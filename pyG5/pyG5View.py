@@ -165,6 +165,10 @@ class pyG5Widget(QWidget):
             ("nav2gs", 0),
             ("nav1dft", 0),
             ("nav2dft", 0),
+            ("nav1bearing", 0),
+            ("nav2bearing", 0),
+            ("nav1dme", 0),
+            ("nav2dme", 0),
             ("gpsdft", 0),
             ("gpsgsavailable", 0),
             ("gpsvnavavailable", 0),
@@ -1072,6 +1076,97 @@ class pyG5HSIWidget(pyG5Widget):
             vertAvailable = self._nav1gsavailable
             gsDev = self._nav1gs
 
+        # bearing 1
+        if int(self._nav1fromto) != 0:
+            self.qp.rotate(90 - self._headingBug + self._nav1bearing)
+
+            self.setPen(2, Qt.GlobalColor.cyan)
+
+            # upside
+            self.qp.drawPolyline(
+                QPolygonF(
+                    [
+                        QPointF(rotatinghsiCircleRadius - 25, 0),
+                        QPointF(hsiCircleRadius, 0),
+                    ]
+                )
+            )
+            # backside
+            self.qp.drawPolyline(
+                QPolygonF(
+                    [
+                        QPointF(-rotatinghsiCircleRadius + 25, 0),
+                        QPointF(-hsiCircleRadius, 0),
+                    ]
+                )
+            )
+            # arrow
+            self.qp.drawPolyline(
+                QPolygonF(
+                    [
+                        QPointF(hsiCircleRadius + 20, -10),
+                        QPointF(hsiCircleRadius + 30, 0),
+                        QPointF(hsiCircleRadius + 20, 10),
+                    ]
+                )
+            )
+
+            self.qp.rotate(-90 + self._headingBug - self._nav1bearing)
+
+        # bearing 2
+        if int(self._nav2fromto) != 0:
+            self.qp.rotate(90 - self._headingBug + self._nav2bearing)
+
+            self.setPen(2, Qt.GlobalColor.cyan)
+
+            # backside
+            self.qp.drawPolyline(
+                QPolygonF(
+                    [
+                        QPointF(-hsiCircleRadius, -5),
+                        QPointF(-hsiCircleRadius - 25, -5),
+                        QPointF(-hsiCircleRadius - 30, 0),
+                        QPointF(-rotatinghsiCircleRadius + 25, 0),
+                        QPointF(-hsiCircleRadius - 30, 0),
+                        QPointF(-hsiCircleRadius - 25, +5),
+                        QPointF(-hsiCircleRadius, +5),
+                    ]
+                )
+            )
+
+            # upside
+            self.qp.drawPolyline(
+                QPolygonF(
+                    [
+                        QPointF(rotatinghsiCircleRadius - 42, -5),
+                        QPointF(hsiCircleRadius, -5),
+                    ]
+                )
+            )
+            self.qp.drawPolyline(
+                QPolygonF(
+                    [
+                        QPointF(rotatinghsiCircleRadius - 42, +5),
+                        QPointF(hsiCircleRadius, +5),
+                    ]
+                )
+            )
+            # arrow
+            self.qp.drawPolyline(
+                QPolygonF(
+                    [
+                        QPointF(hsiCircleRadius + 25, -10),
+                        QPointF(hsiCircleRadius + 35, 0),
+                        QPointF(hsiCircleRadius + 45, 0),
+                        QPointF(hsiCircleRadius + 35, 0),
+                        QPointF(hsiCircleRadius + 25, 10),
+                    ]
+                )
+            )
+
+            self.qp.rotate(-90 + self._headingBug - self._nav2bearing)
+
+        self.setPen(1, Qt.GlobalColor.black)
         self.qp.setBrush(QBrush(navColor))
         # Draw the CDI
         self.qp.rotate(90 - self._headingBug + navcrs)
@@ -1178,13 +1273,14 @@ class pyG5HSIWidget(pyG5Widget):
             )
 
         # Draw the heading Bug indicator bottom corner
-        self.setPen(2, Qt.GlobalColor.cyan)
+        self.setPen(2, Qt.GlobalColor.gray)
         self.qp.setBrush(QBrush(Qt.GlobalColor.black))
 
         headingWidth = 105
         headingHeigth = 30
         self.qp.drawRect(QRectF(g5Width, g5Height, -headingWidth, -headingHeigth))
 
+        self.setPen(2, Qt.GlobalColor.cyan)
         # draw the bug symbol
         self.setPen(1, Qt.GlobalColor.cyan)
         self.qp.setBrush(QBrush(Qt.GlobalColor.cyan))
@@ -1211,7 +1307,11 @@ class pyG5HSIWidget(pyG5Widget):
         )
 
         # draw the dist box
-        if int(self._hsiSource) == 2:
+        if (
+            int(self._hsiSource) == 2
+            or (int(self._hsiSource) == 1 and int(self._nav2fromto) != 0)
+            or (int(self._hsiSource) == 0 and int(self._nav1fromto) != 0)
+        ):
             font.setPixelSize(12)
             font.setBold(False)
             self.qp.setFont(font)
@@ -1231,12 +1331,18 @@ class pyG5HSIWidget(pyG5Widget):
             font.setBold(True)
             self.qp.setFont(font)
             self.setPen(1, navColor)
+            if int(self._hsiSource) == 2:
+                dist = self._gpsdmedist
+            elif int(self._hsiSource) == 1:
+                dist = self._nav2dme
+            else:
+                dist = self._nav1dme
 
             distRect = QRectF(g5Width - 105, 12, 105, 45 - 12)
             self.qp.drawText(
                 distRect,
                 Qt.AlignmentFlag.AlignCenter,
-                "{}".format(round(self._gpsdmedist, 1)),
+                "{}".format(round(dist, 1)),
             )
 
         # set default font size
@@ -1445,10 +1551,132 @@ class pyG5HSIWidget(pyG5Widget):
 
             self.qp.resetTransform()
 
-        # draw the CRS selection
-
         crsBoxHeight = 30
         crsBoxWidth = 105
+
+        # draw the Selected Nav Bearing type
+        self.setPen(2, greyColor)
+        self.qp.setBrush(QBrush(Qt.GlobalColor.black))
+
+        if int(self._nav1fromto) != 0:
+            # draw the contour
+            self.qp.drawPolyline(
+                QPolygonF(
+                    [
+                        QPointF(0, g5Height - crsBoxHeight),
+                        QPointF(0, g5Height - 3 * crsBoxHeight),
+                        QPointF(60, g5Height - 3 * crsBoxHeight),
+                    ]
+                )
+            )
+
+            # draw the contour arc
+            self.qp.drawArc(
+                QRectF(g5Width / 2 - 195, g5Height / 2 - 185, 390, 390),
+                3268,
+                350,
+            )
+
+            # set color to cyan and draw the bearing symbol
+            self.setPen(2, Qt.GlobalColor.cyan)
+
+            self.qp.drawPolyline(
+                QPolygonF(
+                    [
+                        QPointF(10, g5Height - 2.5 * crsBoxHeight),
+                        QPointF(50, g5Height - 2.5 * crsBoxHeight),
+                    ]
+                )
+            )
+            self.qp.drawPolyline(
+                QPolygonF(
+                    [
+                        QPointF(30, g5Height - 2.8 * crsBoxHeight),
+                        QPointF(40, g5Height - 2.5 * crsBoxHeight),
+                        QPointF(30, g5Height - 2.2 * crsBoxHeight),
+                    ]
+                )
+            )
+
+            # draw the nav type
+            self.qp.drawText(
+                QRectF(
+                    QPointF(0, g5Height - crsBoxHeight),
+                    QPointF(crsBoxWidth, g5Height - 2 * crsBoxHeight),
+                ),
+                Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter,
+                "{}".format(self.getNavTypeString(self._nav1type, "")),
+            )
+
+        if int(self._nav2fromto) != 0 and vertAvailable == 0:
+            # set color to grey
+            self.setPen(2, Qt.GlobalColor.gray)
+
+            # draw the contour
+            self.qp.drawPolyline(
+                QPolygonF(
+                    [
+                        QPointF(g5Width, g5Height - crsBoxHeight),
+                        QPointF(g5Width, g5Height - 3 * crsBoxHeight),
+                        QPointF(g5Width - 60, g5Height - 3 * crsBoxHeight),
+                    ]
+                )
+            )
+
+            # draw the contour arc
+            self.qp.drawArc(
+                QRectF(g5Width / 2 - 195, g5Height / 2 - 185, 390, 390),
+                5036,
+                335,
+            )
+
+            # set color to cyan and draw the bearing symbol
+            self.setPen(2, Qt.GlobalColor.cyan)
+            self.qp.drawPolyline(
+                QPolygonF(
+                    [
+                        QPointF(g5Width - 40, g5Height - 2.5 * crsBoxHeight),
+                        QPointF(g5Width - 50, g5Height - 2.5 * crsBoxHeight),
+                    ]
+                )
+            )
+            self.qp.drawPolyline(
+                QPolygonF(
+                    [
+                        QPointF(g5Width - 10, g5Height - 2.5 * crsBoxHeight + 5),
+                        QPointF(g5Width - 34, g5Height - 2.5 * crsBoxHeight + 5),
+                    ]
+                )
+            )
+            self.qp.drawPolyline(
+                QPolygonF(
+                    [
+                        QPointF(g5Width - 10, g5Height - 2.5 * crsBoxHeight - 5),
+                        QPointF(g5Width - 34, g5Height - 2.5 * crsBoxHeight - 5),
+                    ]
+                )
+            )
+            self.qp.drawPolyline(
+                QPolygonF(
+                    [
+                        QPointF(g5Width - 30, g5Height - 2.8 * crsBoxHeight),
+                        QPointF(g5Width - 40, g5Height - 2.5 * crsBoxHeight),
+                        QPointF(g5Width - 30, g5Height - 2.2 * crsBoxHeight),
+                    ]
+                )
+            )
+
+            # draw the nav type
+            self.qp.drawText(
+                QRectF(
+                    QPointF(g5Width, g5Height - crsBoxHeight),
+                    QPointF(g5Width - crsBoxWidth, g5Height - 2 * crsBoxHeight),
+                ),
+                Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter,
+                "{}".format(self.getNavTypeString(self._nav2type, "")),
+            )
+
+        # draw the CRS selection
 
         self.setPen(2, greyColor)
         self.qp.setBrush(QBrush(Qt.GlobalColor.black))
