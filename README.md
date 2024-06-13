@@ -17,7 +17,29 @@ Below is a view of the user interface.
 
 And you can see it in its simulation environment
 
-![flightSimView](https://raw.githubusercontent.com/blauret/pyG5/main/assets/flightSimView.jpeg)
+![flightSimView](https://raw.githubusercontent.com/blauret/pyG5/main/assets/23-12-13%2019-58-23%201732.jpg)
+
+## Second Display
+
+It's also possible to run pyG5 with a secondary window. In my sim setup this contains all the missing items to fly a C172 without display. In thery you could do a complete IFR flight switcing of displays right after take-off down to minimums. 
+
+The secondary window contains:
+- Transpoder control and status, works with a touch screen to input code
+- Fuel selector status
+- Carb heat and Fuel pump status
+- Advisory Panel
+- Flap indicator
+- Trim indicator
+
+The view:
+
+![secondWidget](https://raw.githubusercontent.com/blauret/pyG5/main/assets/Screenshot%202024-06-13%20at%2009.10.52.png)
+
+With the XPDR expanded:
+
+![secondWidget](https://raw.githubusercontent.com/blauret/pyG5/main/assets/Screenshot%202024-06-13%20at%2009.10.54.png)
+
+
 
 ## Maturity
 
