@@ -8,10 +8,11 @@ import platform
 import logging
 import struct
 import binascii
-import os
+import shutil
+import subprocess
 from datetime import datetime as datetime_, timedelta
 
-from PySide6.QtCore import QObject, Slot, Signal, QTimer
+from PySide6.QtCore import QObject, Slot, Signal, QTimer, QCoreApplication
 
 from PySide6.QtNetwork import QUdpSocket, QHostAddress, QAbstractSocket
 
@@ -646,10 +647,21 @@ class pyG5NetWorkManager(QObject):
 
         self.logger = logging.getLogger(self.__class__.__name__)
 
+        self._screensaver_inhibited = False
+        self._can_manage_screensaver = (
+            platform.system() == "Linux" and shutil.which("xset") is not None
+        )
+        if not self._can_manage_screensaver:
+            self.logger.debug("Screensaver control disabled: xset not available")
+
         # Idle timer trigger reconnection
         self.idleTimerDuration = 10000
         self.idleTimer = QTimer()
         self.idleTimer.timeout.connect(self.reconnect)
+
+        app = QCoreApplication.instance()
+        if app is not None:
+            app.aboutToQuit.connect(self._on_about_to_quit)
 
         # Create local UDP socket
         self.udpSock = QUdpSocket(self)
@@ -682,11 +694,7 @@ class pyG5NetWorkManager(QObject):
 
         self.udpSock.close()
         self.idleTimer.stop()
-
-        # let the screensaver activate
-        if platform.machine() in "aarch64":
-            os.system("xset s on")
-            os.system("xset s 1")
+        self._set_screensaver_inhibited(False)
 
     @Slot(QHostAddress, int)
     def xplaneConnect(self, addr, port):
@@ -713,11 +721,7 @@ class pyG5NetWorkManager(QObject):
 
         # start the idle timer
         self.idleTimer.start(self.idleTimerDuration)
-
-        # now we can inhibit the screensaver
-        if platform.machine() in "aarch64":
-            os.system("xset s reset")
-            os.system("xset s off")
+        self._set_screensaver_inhibited(True)
 
     @Slot()
     def socketStateHandler(self):
@@ -733,10 +737,47 @@ class pyG5NetWorkManager(QObject):
             self.listener.xpInstance.connect(self.xplaneConnect)
 
         elif self.udpSock.state() == QAbstractSocket.SocketState.UnconnectedState:
+            self._set_screensaver_inhibited(False)
             # socket got disconnected issue reconnection
             self.udpSock.bind(
                 QHostAddress.SpecialAddress.AnyIPv4, 0, QUdpSocket.BindFlag.ShareAddress
             )
+
+    def _run_xset(self, *args):
+        """Run xset command and log failures without crashing."""
+        completed = subprocess.run(
+            ["xset", *args],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+        )
+        if completed.returncode != 0:
+            self.logger.warning("xset %s failed", " ".join(args))
+
+    def _set_screensaver_inhibited(self, inhibit):
+        """Enable or disable screensaver inhibition once per state change."""
+        if not self._can_manage_screensaver:
+            return
+
+        if inhibit == self._screensaver_inhibited:
+            return
+
+        if inhibit:
+            # Disable both screen blanking and DPMS to keep displays awake.
+            self._run_xset("s", "off")
+            self._run_xset("-dpms")
+            self._run_xset("s", "noblank")
+            self._screensaver_inhibited = True
+        else:
+            # Restore defaults so screen management returns to OS settings.
+            self._run_xset("s", "default")
+            self._run_xset("+dpms")
+            self._screensaver_inhibited = False
+
+    @Slot()
+    def _on_about_to_quit(self):
+        """Restore screen management when the app exits."""
+        self._set_screensaver_inhibited(False)
 
     @Slot()
     def dataHandler(self):
