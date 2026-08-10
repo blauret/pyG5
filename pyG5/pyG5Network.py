@@ -8,10 +8,11 @@ import platform
 import logging
 import struct
 import binascii
-import os
+import shutil
+import subprocess
 from datetime import datetime as datetime_, timedelta
 
-from PySide6.QtCore import QObject, Slot, Signal, QTimer
+from PySide6.QtCore import QObject, Slot, Signal, QTimer, QCoreApplication
 
 from PySide6.QtNetwork import QUdpSocket, QHostAddress, QAbstractSocket
 
@@ -645,11 +646,37 @@ class pyG5NetWorkManager(QObject):
         ]
 
         self.logger = logging.getLogger(self.__class__.__name__)
+        self._last_data_received_at = None
+        self._last_stream_debug_at = None
+
+        self._screensaver_inhibited = False
+        self._xset_path = shutil.which("xset")
+        self._can_manage_screensaver = (
+            platform.system() == "Linux" and self._xset_path is not None
+        )
+        if not self._can_manage_screensaver:
+            self.logger.info(
+                "Screensaver control disabled: system=%s machine=%s xset=%s",
+                platform.system(),
+                platform.machine(),
+                self._xset_path,
+            )
+        else:
+            self.logger.info(
+                "Screensaver control enabled: system=%s machine=%s xset=%s",
+                platform.system(),
+                platform.machine(),
+                self._xset_path,
+            )
 
         # Idle timer trigger reconnection
         self.idleTimerDuration = 10000
         self.idleTimer = QTimer()
         self.idleTimer.timeout.connect(self.reconnect)
+
+        app = QCoreApplication.instance()
+        if app is not None:
+            app.aboutToQuit.connect(self._on_about_to_quit)
 
         # Create local UDP socket
         self.udpSock = QUdpSocket(self)
@@ -678,19 +705,27 @@ class pyG5NetWorkManager(QObject):
     @Slot()
     def reconnect(self):
         """Idle timer expired. Trigger reconnection process."""
-        self.logger.info("Connection Timeout expired")
+        seconds_since_data = None
+        if self._last_data_received_at is not None:
+            seconds_since_data = (
+                datetime_.now() - self._last_data_received_at
+            ).total_seconds()
+
+        self.logger.warning(
+            "Connection timeout expired (idleTimer=%sms, last_data_age=%.2fs, inhibited=%s)",
+            self.idleTimerDuration,
+            seconds_since_data if seconds_since_data is not None else -1.0,
+            self._screensaver_inhibited,
+        )
 
         self.udpSock.close()
         self.idleTimer.stop()
-
-        # let the screensaver activate
-        if platform.machine() in "aarch64":
-            os.system("xset s on")
-            os.system("xset s 1")
+        self._set_screensaver_inhibited(False)
 
     @Slot(QHostAddress, int)
     def xplaneConnect(self, addr, port):
         """Slot connecting triggering the connection to the XPlane."""
+        self.logger.info("XPlane connect discovered: host=%s port=%s", addr.toString(), port)
         self.listener.xpInstance.disconnect(self.xplaneConnect)
         self.listener.deleteLater()
 
@@ -713,16 +748,13 @@ class pyG5NetWorkManager(QObject):
 
         # start the idle timer
         self.idleTimer.start(self.idleTimerDuration)
-
-        # now we can inhibit the screensaver
-        if platform.machine() in "aarch64":
-            os.system("xset s reset")
-            os.system("xset s off")
+        self.logger.debug("Idle timer started (%sms)", self.idleTimerDuration)
+        self._set_screensaver_inhibited(True)
 
     @Slot()
     def socketStateHandler(self):
         """Socket State handler."""
-        self.logger.info("socketStateHandler: {}".format(self.udpSock.state()))
+        self.logger.info("socketStateHandler: %s", self.udpSock.state())
 
         if self.udpSock.state() == QAbstractSocket.SocketState.BoundState:
             self.logger.info("Started Multicast listenner")
@@ -733,16 +765,90 @@ class pyG5NetWorkManager(QObject):
             self.listener.xpInstance.connect(self.xplaneConnect)
 
         elif self.udpSock.state() == QAbstractSocket.SocketState.UnconnectedState:
+            self.logger.warning(
+                "Socket transitioned to UnconnectedState. Rebinding and allowing screensaver"
+            )
+            self._set_screensaver_inhibited(False)
             # socket got disconnected issue reconnection
             self.udpSock.bind(
                 QHostAddress.SpecialAddress.AnyIPv4, 0, QUdpSocket.BindFlag.ShareAddress
             )
+
+    def _run_xset(self, *args):
+        """Run xset command and log failures without crashing."""
+        completed = subprocess.run(
+            ["xset", *args],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if completed.returncode != 0:
+            self.logger.warning(
+                "xset %s failed: rc=%s stderr=%s",
+                " ".join(args),
+                completed.returncode,
+                (completed.stderr or "").strip(),
+            )
+        else:
+            self.logger.debug("xset %s succeeded", " ".join(args))
+
+    def _set_screensaver_inhibited(self, inhibit):
+        """Enable or disable screensaver inhibition once per state change."""
+        if not self._can_manage_screensaver:
+            self.logger.debug(
+                "Skip screensaver inhibit=%s (unsupported on this host)", inhibit
+            )
+            return
+
+        if inhibit == self._screensaver_inhibited:
+            self.logger.debug(
+                "No screensaver state change required (already inhibit=%s)",
+                self._screensaver_inhibited,
+            )
+            return
+
+        self.logger.info(
+            "Changing screensaver inhibition %s -> %s",
+            self._screensaver_inhibited,
+            inhibit,
+        )
+
+        if inhibit:
+            # Disable both screen blanking and DPMS to keep displays awake.
+            self._run_xset("s", "off")
+            self._run_xset("-dpms")
+            self._run_xset("s", "noblank")
+            self._screensaver_inhibited = True
+        else:
+            # Restore defaults so screen management returns to OS settings.
+            self._run_xset("s", "default")
+            self._run_xset("+dpms")
+            self._screensaver_inhibited = False
+
+    @Slot()
+    def _on_about_to_quit(self):
+        """Restore screen management when the app exits."""
+        self.logger.info("Application closing. Restoring screensaver behavior")
+        self._set_screensaver_inhibited(False)
 
     @Slot()
     def dataHandler(self):
         """dataHandler."""
         # data received restart the idle timer
         self.idleTimer.start(self.idleTimerDuration)
+        now = datetime_.now()
+        self._last_data_received_at = now
+
+        if (
+            self._last_stream_debug_at is None
+            or (now - self._last_stream_debug_at).total_seconds() >= 30
+        ):
+            self.logger.debug(
+                "Data stream alive. idleTimer restarted (%sms), pending=%s",
+                self.idleTimerDuration,
+                self.udpSock.pendingDatagramSize(),
+            )
+            self._last_stream_debug_at = now
 
         while self.udpSock.hasPendingDatagrams():
             datagram = self.udpSock.receiveDatagram()
