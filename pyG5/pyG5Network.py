@@ -657,21 +657,23 @@ class pyG5NetWorkManager(QObject):
         self._xset_path = shutil.which("xset")
         self._gdbus_path = shutil.which("gdbus")
         self._dbus_send_path = shutil.which("dbus-send")
+        self._screensaver_dbus_service = None
         self._screensaver_backend = self._detect_screensaver_backend()
         self._can_manage_screensaver = self._screensaver_backend is not None
         if not self._can_manage_screensaver:
             self.logger.info(
-                "Screensaver control disabled: system=%s machine=%s session=%s xset=%s gdbus=%s dbus-send=%s",
+                "Screensaver control disabled: system=%s machine=%s session=%s xset=%s gdbus=%s dbus-send=%s dbus-service=%s",
                 platform.system(),
                 platform.machine(),
                 self._session_type or "unknown",
                 self._xset_path,
                 self._gdbus_path,
                 self._dbus_send_path,
+                self._screensaver_dbus_service,
             )
         else:
             self.logger.info(
-                "Screensaver control enabled: system=%s machine=%s session=%s backend=%s xset=%s gdbus=%s dbus-send=%s",
+                "Screensaver control enabled: system=%s machine=%s session=%s backend=%s xset=%s gdbus=%s dbus-send=%s dbus-service=%s",
                 platform.system(),
                 platform.machine(),
                 self._session_type or "unknown",
@@ -679,6 +681,7 @@ class pyG5NetWorkManager(QObject):
                 self._xset_path,
                 self._gdbus_path,
                 self._dbus_send_path,
+                self._screensaver_dbus_service,
             )
 
         # Idle timer trigger reconnection
@@ -812,31 +815,118 @@ class pyG5NetWorkManager(QObject):
         has_dbus = self._gdbus_path is not None or self._dbus_send_path is not None
         is_wayland = self._session_type == "wayland"
 
-        # Wayland compositors do not expose xset reliably; prefer DBus inhibition.
-        if is_wayland and has_dbus:
+        if has_dbus:
+            self._screensaver_dbus_service = self._detect_screensaver_dbus_service()
+
+        # Wayland compositors do not expose xset reliably; prefer a DBus service
+        # that we have verified is actually present on the session bus.
+        if is_wayland and self._screensaver_dbus_service is not None:
             return "dbus"
 
         if self._xset_path is not None:
             return "xset"
 
-        if has_dbus:
+        if self._screensaver_dbus_service is not None:
             return "dbus"
 
         return None
 
-    def _run_screensaver_dbus(self, method, *method_args):
-        """Call org.freedesktop.ScreenSaver method via gdbus or dbus-send."""
+    def _dbus_name_has_owner(self, service_name):
+        """Return whether a DBus service currently exists on the session bus."""
         if self._gdbus_path is not None:
             cmd = [
                 "gdbus",
                 "call",
                 "--session",
                 "--dest",
-                "org.freedesktop.ScreenSaver",
+                "org.freedesktop.DBus",
                 "--object-path",
-                "/org/freedesktop/ScreenSaver",
+                "/org/freedesktop/DBus",
                 "--method",
-                f"org.freedesktop.ScreenSaver.{method}",
+                "org.freedesktop.DBus.NameHasOwner",
+                service_name,
+            ]
+        elif self._dbus_send_path is not None:
+            cmd = [
+                "dbus-send",
+                "--session",
+                "--dest=org.freedesktop.DBus",
+                "--type=method_call",
+                "--print-reply",
+                "/org/freedesktop/DBus",
+                "org.freedesktop.DBus.NameHasOwner",
+                f"string:{service_name}",
+            ]
+        else:
+            return False
+
+        completed = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if completed.returncode != 0:
+            self.logger.debug(
+                "DBus owner probe failed for %s: rc=%s stderr=%s",
+                service_name,
+                completed.returncode,
+                (completed.stderr or "").strip(),
+            )
+            return False
+
+        output = "\n".join(
+            part for part in [(completed.stdout or ""), (completed.stderr or "")] if part
+        )
+        return "true" in output.lower()
+
+    def _detect_screensaver_dbus_service(self):
+        """Pick the first supported DBus inhibition API available in this session."""
+        candidates = [
+            {
+                "name": "org.freedesktop.ScreenSaver",
+                "object_path": "/org/freedesktop/ScreenSaver",
+                "interface": "org.freedesktop.ScreenSaver",
+                "inhibit_method": "Inhibit",
+                "uninhibit_method": "UnInhibit",
+                "inhibit_args": lambda reason: ["pyG5", reason],
+                "uninhibit_args": lambda cookie: [int(cookie)],
+            },
+            {
+                "name": "org.gnome.SessionManager",
+                "object_path": "/org/gnome/SessionManager",
+                "interface": "org.gnome.SessionManager",
+                "inhibit_method": "Inhibit",
+                "uninhibit_method": "Uninhibit",
+                "inhibit_args": lambda reason: ["pyG5", 0, reason, 8],
+                "uninhibit_args": lambda cookie: [int(cookie)],
+            },
+        ]
+
+        for candidate in candidates:
+            if self._dbus_name_has_owner(candidate["name"]):
+                return candidate
+
+        return None
+
+    def _run_screensaver_dbus(self, method, *method_args):
+        """Call the selected DBus screensaver/session manager method."""
+        service = self._screensaver_dbus_service
+        if service is None:
+            self.logger.warning("DBus screensaver call requested without a detected service")
+            return None
+
+        if self._gdbus_path is not None:
+            cmd = [
+                "gdbus",
+                "call",
+                "--session",
+                "--dest",
+                service["name"],
+                "--object-path",
+                service["object_path"],
+                "--method",
+                f"{service['interface']}.{method}",
                 *[str(arg) for arg in method_args],
             ]
         elif self._dbus_send_path is not None:
@@ -850,11 +940,11 @@ class pyG5NetWorkManager(QObject):
             cmd = [
                 "dbus-send",
                 "--session",
-                "--dest=org.freedesktop.ScreenSaver",
+                f"--dest={service['name']}",
                 "--type=method_call",
                 "--print-reply",
-                "/org/freedesktop/ScreenSaver",
-                f"org.freedesktop.ScreenSaver.{method}",
+                service["object_path"],
+                f"{service['interface']}.{method}",
                 *typed_args,
             ]
         else:
@@ -882,8 +972,13 @@ class pyG5NetWorkManager(QObject):
 
     def _dbus_inhibit(self):
         """Request compositor/session inhibition and return cookie."""
+        service = self._screensaver_dbus_service
+        if service is None:
+            return None
+
+        reason = "Keep displays awake while X-Plane is connected"
         output = self._run_screensaver_dbus(
-            "Inhibit", "pyG5", "Keep displays awake while X-Plane is connected"
+            service["inhibit_method"], *service["inhibit_args"](reason)
         )
         if output is None:
             return None
@@ -897,7 +992,13 @@ class pyG5NetWorkManager(QObject):
 
     def _dbus_uninhibit(self, cookie):
         """Release compositor/session inhibition cookie."""
-        self._run_screensaver_dbus("UnInhibit", int(cookie))
+        service = self._screensaver_dbus_service
+        if service is None:
+            return
+
+        self._run_screensaver_dbus(
+            service["uninhibit_method"], *service["uninhibit_args"](cookie)
+        )
 
     def _set_screensaver_inhibited(self, inhibit):
         """Enable or disable screensaver inhibition once per state change."""
