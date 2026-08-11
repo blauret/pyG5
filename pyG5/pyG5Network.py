@@ -8,6 +8,8 @@ import platform
 import logging
 import struct
 import binascii
+import os
+import re
 import shutil
 import subprocess
 from datetime import datetime as datetime_, timedelta
@@ -650,23 +652,33 @@ class pyG5NetWorkManager(QObject):
         self._last_stream_debug_at = None
 
         self._screensaver_inhibited = False
+        self._screensaver_cookie = None
+        self._session_type = os.environ.get("XDG_SESSION_TYPE", "").lower()
         self._xset_path = shutil.which("xset")
-        self._can_manage_screensaver = (
-            platform.system() == "Linux" and self._xset_path is not None
-        )
+        self._gdbus_path = shutil.which("gdbus")
+        self._dbus_send_path = shutil.which("dbus-send")
+        self._screensaver_backend = self._detect_screensaver_backend()
+        self._can_manage_screensaver = self._screensaver_backend is not None
         if not self._can_manage_screensaver:
             self.logger.info(
-                "Screensaver control disabled: system=%s machine=%s xset=%s",
+                "Screensaver control disabled: system=%s machine=%s session=%s xset=%s gdbus=%s dbus-send=%s",
                 platform.system(),
                 platform.machine(),
+                self._session_type or "unknown",
                 self._xset_path,
+                self._gdbus_path,
+                self._dbus_send_path,
             )
         else:
             self.logger.info(
-                "Screensaver control enabled: system=%s machine=%s xset=%s",
+                "Screensaver control enabled: system=%s machine=%s session=%s backend=%s xset=%s gdbus=%s dbus-send=%s",
                 platform.system(),
                 platform.machine(),
+                self._session_type or "unknown",
+                self._screensaver_backend,
                 self._xset_path,
+                self._gdbus_path,
+                self._dbus_send_path,
             )
 
         # Idle timer trigger reconnection
@@ -792,6 +804,101 @@ class pyG5NetWorkManager(QObject):
         else:
             self.logger.debug("xset %s succeeded", " ".join(args))
 
+    def _detect_screensaver_backend(self):
+        """Select a screen inhibition backend for this host/session."""
+        if platform.system() != "Linux":
+            return None
+
+        has_dbus = self._gdbus_path is not None or self._dbus_send_path is not None
+        is_wayland = self._session_type == "wayland"
+
+        # Wayland compositors do not expose xset reliably; prefer DBus inhibition.
+        if is_wayland and has_dbus:
+            return "dbus"
+
+        if self._xset_path is not None:
+            return "xset"
+
+        if has_dbus:
+            return "dbus"
+
+        return None
+
+    def _run_screensaver_dbus(self, method, *method_args):
+        """Call org.freedesktop.ScreenSaver method via gdbus or dbus-send."""
+        if self._gdbus_path is not None:
+            cmd = [
+                "gdbus",
+                "call",
+                "--session",
+                "--dest",
+                "org.freedesktop.ScreenSaver",
+                "--object-path",
+                "/org/freedesktop/ScreenSaver",
+                "--method",
+                f"org.freedesktop.ScreenSaver.{method}",
+                *[str(arg) for arg in method_args],
+            ]
+        elif self._dbus_send_path is not None:
+            typed_args = []
+            for arg in method_args:
+                if isinstance(arg, int):
+                    typed_args.append(f"uint32:{arg}")
+                else:
+                    typed_args.append(f"string:{arg}")
+
+            cmd = [
+                "dbus-send",
+                "--session",
+                "--dest=org.freedesktop.ScreenSaver",
+                "--type=method_call",
+                "--print-reply",
+                "/org/freedesktop/ScreenSaver",
+                f"org.freedesktop.ScreenSaver.{method}",
+                *typed_args,
+            ]
+        else:
+            self.logger.warning("DBus screensaver call requested without available client")
+            return None
+
+        completed = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if completed.returncode != 0:
+            self.logger.warning(
+                "DBus %s failed: rc=%s stderr=%s",
+                method,
+                completed.returncode,
+                (completed.stderr or "").strip(),
+            )
+            return None
+
+        output = (completed.stdout or "").strip()
+        self.logger.debug("DBus %s succeeded: %s", method, output)
+        return output
+
+    def _dbus_inhibit(self):
+        """Request compositor/session inhibition and return cookie."""
+        output = self._run_screensaver_dbus(
+            "Inhibit", "pyG5", "Keep displays awake while X-Plane is connected"
+        )
+        if output is None:
+            return None
+
+        cookie_match = re.search(r"\b(\d+)\b", output)
+        if cookie_match is None:
+            self.logger.warning("Could not parse DBus inhibit cookie from output: %s", output)
+            return None
+
+        return int(cookie_match.group(1))
+
+    def _dbus_uninhibit(self, cookie):
+        """Release compositor/session inhibition cookie."""
+        self._run_screensaver_dbus("UnInhibit", int(cookie))
+
     def _set_screensaver_inhibited(self, inhibit):
         """Enable or disable screensaver inhibition once per state change."""
         if not self._can_manage_screensaver:
@@ -813,17 +920,40 @@ class pyG5NetWorkManager(QObject):
             inhibit,
         )
 
-        if inhibit:
-            # Disable both screen blanking and DPMS to keep displays awake.
-            self._run_xset("s", "off")
-            self._run_xset("-dpms")
-            self._run_xset("s", "noblank")
-            self._screensaver_inhibited = True
-        else:
-            # Restore defaults so screen management returns to OS settings.
-            self._run_xset("s", "default")
-            self._run_xset("+dpms")
-            self._screensaver_inhibited = False
+        if self._screensaver_backend == "xset":
+            if inhibit:
+                # Disable both screen blanking and DPMS to keep displays awake.
+                self._run_xset("s", "off")
+                self._run_xset("-dpms")
+                self._run_xset("s", "noblank")
+                self._screensaver_inhibited = True
+            else:
+                # Restore defaults so screen management returns to OS settings.
+                self._run_xset("s", "default")
+                self._run_xset("+dpms")
+                self._screensaver_inhibited = False
+            return
+
+        if self._screensaver_backend == "dbus":
+            if inhibit:
+                cookie = self._dbus_inhibit()
+                if cookie is None:
+                    self.logger.warning(
+                        "Failed to acquire DBus screensaver inhibit cookie; blanking control unchanged"
+                    )
+                    return
+                self._screensaver_cookie = cookie
+                self._screensaver_inhibited = True
+            else:
+                if self._screensaver_cookie is not None:
+                    self._dbus_uninhibit(self._screensaver_cookie)
+                self._screensaver_cookie = None
+                self._screensaver_inhibited = False
+            return
+
+        self.logger.debug(
+            "No screensaver backend available while inhibit=%s was requested", inhibit
+        )
 
     @Slot()
     def _on_about_to_quit(self):

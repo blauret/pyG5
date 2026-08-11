@@ -98,27 +98,32 @@ class pyG5App(QApplication):
         )
 
         # Show window
-        self.mainWindow.loadSettings()
-
         if platform.machine() == "aarch64":
             self.mainWindow.setWindowFlags(
                 self.mainWindow.windowFlags() | Qt.FramelessWindowHint
             )
+            self.mainWindow.show()
+            self.mainWindow.loadSettings()
+            QApplication.processEvents()  # flush screen/position before fullscreen request
             self.mainWindow.setWindowState(Qt.WindowFullScreen)
-
-        self.mainWindow.show()
+        else:
+            self.mainWindow.loadSettings()
+            self.mainWindow.show()
 
         if self.args.mode == "full":
             self.secondaryWindow = pyG5SecondWindow()
-
-            self.secondaryWindow.loadSettings()
 
             if platform.machine() == "aarch64":
                 self.secondaryWindow.setWindowFlags(
                     self.secondaryWindow.windowFlags() | Qt.FramelessWindowHint
                 )
-
+                self.secondaryWindow.show()
+                self.secondaryWindow.loadSettings()
+                QApplication.processEvents()  # flush screen/position before fullscreen request
                 self.secondaryWindow.setWindowState(Qt.WindowFullScreen)
+            else:
+                self.secondaryWindow.loadSettings()
+                self.secondaryWindow.show()
 
             # connect the value coming from the simulator
             self.networkManager.drefUpdate.connect(
@@ -132,8 +137,6 @@ class pyG5App(QApplication):
             self.secondaryWindow.cWidget.xpdrModeSignal.connect(
                 self.send_transponder_mode
             )
-
-            self.secondaryWindow.show()
 
             self.secondaryWindow.closed.connect(self.mainWindow.close)
             self.mainWindow.closed.connect(self.secondaryWindow.close)
@@ -252,7 +255,25 @@ class pyG5BaseWindow(QMainWindow):
             )
         except Exception as inst:
             logging.warning("State restore: {}".format(inst))
-            pass
+
+        if platform.machine() == "aarch64":
+            # Screen origin is stable across reboots; screen names (XWAYLAND*) are not
+            try:
+                saved_x = int(self.settings.value("{}/screenOriginX".format(self.__class__.__name__), -1))
+                saved_y = int(self.settings.value("{}/screenOriginY".format(self.__class__.__name__), -1))
+                if saved_x >= 0:
+                    for screen in QApplication.screens():
+                        sg = screen.geometry()
+                        if sg.x() == saved_x and sg.y() == saved_y:
+                            handle = self.windowHandle()
+                            if handle:
+                                handle.setScreen(screen)
+                                handle.setPosition(sg.topLeft())
+                            else:
+                                self.move(sg.topLeft())
+                            break
+            except Exception as inst:
+                logging.warning("Screen restore: {}".format(inst))
 
     @Slot(QCloseEvent)
     def closeEvent(self, event):
@@ -270,6 +291,15 @@ class pyG5BaseWindow(QMainWindow):
         self.settings.setValue(
             "{}/windowState".format(self.__class__.__name__), self.saveState()
         )
+        screen = self.screen()
+        if screen:
+            self.settings.setValue(
+                "{}/screenOriginX".format(self.__class__.__name__), screen.geometry().x()
+            )
+            self.settings.setValue(
+                "{}/screenOriginY".format(self.__class__.__name__), screen.geometry().y()
+            )
+        self.settings.sync()
         event.accept()
         self.closed.emit()
         QMainWindow.closeEvent(self, event)
