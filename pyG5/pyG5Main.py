@@ -81,7 +81,8 @@ class pyG5App(QApplication):
         self.paintTimer.timeout.connect(
             self.painTimerCB
         )  # Let the interpreter run each 500 ms.
-        self.paintTimer.start(25)  # You may change this if you wish.
+
+        self.networkManager.connState.connect(self.painTimerControl)
 
         # The QWidget widget is the base class of all user interface objects in PySide6.
         self.mainWindow = pyG5MainWindow()
@@ -152,6 +153,14 @@ class pyG5App(QApplication):
         self.mainWindow.pyG5DualStacked.update()
         if self.args.mode == "full":
             self.secondaryWindow.cWidget.update()
+
+    @Slot()
+    def painTimerControl(self, connState):
+        """Trigger update of all the widgets."""
+        if connState:
+            self.paintTimer.start(25)
+        else:
+            self.paintTimer.stop()
 
     def argument_parser(self):
         """Initialize the arguments passed from the command line."""

@@ -34,6 +34,7 @@ class pyG5NetWorkManager(QObject):
     """
 
     drefUpdate = Signal(object)
+    connState = Signal(bool)
 
     def __init__(self, parent=None):
         """Object constructor.
@@ -720,12 +721,15 @@ class pyG5NetWorkManager(QObject):
 
         self.udpSock.close()
         self.idleTimer.stop()
+        self.connState.emit(False)
         self._set_screensaver_inhibited(False)
 
     @Slot(QHostAddress, int)
     def xplaneConnect(self, addr, port):
         """Slot connecting triggering the connection to the XPlane."""
-        self.logger.info("XPlane connect discovered: host=%s port=%s", addr.toString(), port)
+        self.logger.info(
+            "XPlane connect discovered: host=%s port=%s", addr.toString(), port
+        )
         self.listener.xpInstance.disconnect(self.xplaneConnect)
         self.listener.deleteLater()
 
@@ -748,6 +752,7 @@ class pyG5NetWorkManager(QObject):
 
         # start the idle timer
         self.idleTimer.start(self.idleTimerDuration)
+        self.connState.emit(True)
         self.logger.debug("Idle timer started (%sms)", self.idleTimerDuration)
         self._set_screensaver_inhibited(True)
 
